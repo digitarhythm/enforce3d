@@ -1,0 +1,43 @@
+#!/bin/bash
+
+if [ -z ${2} ]; then
+	exit
+fi
+
+PACKAGE=${1}
+LIBRARY=${2}
+
+CWD=`pwd`
+ENF=$(cd $(dirname $0)/..;pwd)
+PROJ=$CWD/$PACKAGE
+
+# 必要なディレクトリの作成
+echo "Project Dcirectory:"$PROJ
+mkdir -p $PROJ/lib
+mkdir -p $PROJ/media/picture
+mkdir -p $PROJ/media/sound
+mkdir -p $PROJ/src
+mkdir -p $PROJ/sysobject
+mkdir -p $PROJ/usrobject
+mkdir -p $PROJ/plugins
+mkdir -p $PROJ/extlib
+
+# フレームワークファイルのコピー
+cp -af $ENF/index.php $PROJ/
+cp -af $ENF/media/* $PROJ/media/
+cp -af $ENF/src/enforceMain.coffee $PROJ/src/
+cp -af $ENF/src/environ.coffee $PROJ/src/
+cp -af $ENF/extlib/* $PROJ/extlib/
+cp -af $ENF/lib/sqlite3.db $PROJ/lib/
+$ENF/bin/_createconfig $LIBRARY > $PROJ/lib/config.ini
+
+# ver2.0を示すシンボリックリンクを生成
+echo '2.0' > $PROJ/lib/version
+
+# サンプルソースをコピー
+cp -af $ENF/src/sample.coffee $PROJ/src/
+
+# ライブラリをコンパイル
+coffee -b -j $PROJ/sysobject/enforce.core.tmlib.js -c $ENF/lib/_originObject.coffee $ENF/lib/_stationary.coffee $ENF/lib/library.coffee $ENF/lib/main_tmlib.coffee
+coffee -b -j $PROJ/sysobject/enforce.core.enchant.js -c $ENF/lib/_originObject.coffee $ENF/lib/_stationary.coffee $ENF/lib/library.coffee $ENF/lib/main_enchant.coffee
+coffee -b -o $PROJ/usrobject -c $PROJ/src/*.coffee

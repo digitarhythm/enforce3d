@@ -1,0 +1,30 @@
+#!/bin/bash
+
+CWD=`pwd`
+ENF=$(cd $(dirname $0)/..;pwd)
+PROJ=$CWD
+
+OLDIFS=$IFS
+IFS=
+exec < $PROJ/lib/version
+echo ${version}
+while read DATA
+do
+    version=$DATA
+done
+IFS=$OLDIFS
+if [ "$version" != "2.0" ]; then
+    echo "version unmatched."
+    exit
+fi
+
+# フレームワークファイルのコピー
+if [ ! -f $PROJ/index.php ]; then
+	echo "ERROR: This project is static mode."
+	exit
+fi
+
+cp -af $ENF/index.php $PROJ/
+cp -af $ENF/extlib/* $PROJ/extlib/
+coffee -b -j $PROJ/sysobject/enforce.core.tmlib.js -c $ENF/lib/_originObject.coffee $ENF/lib/_stationary.coffee $ENF/lib/library.coffee $ENF/lib/main_tmlib.coffee
+coffee -b -j $PROJ/sysobject/enforce.core.enchant.js -c $ENF/lib/_originObject.coffee $ENF/lib/_stationary.coffee $ENF/lib/library.coffee $ENF/lib/main_enchant.coffee

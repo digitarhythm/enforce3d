@@ -1,0 +1,14 @@
+#!/usr/bin/php
+<?php
+if ($argc < 2) {
+    exit;
+}
+$WEBGL = "false";
+$DEBUG = "true";
+$LIBRARY = ($argv[1] == "0" ? "enchant" : "tmlib");
+
+echo "[ENVIRON]\n";
+echo "webgl=$WEBGL\n";
+echo "debug=$DEBUG\n";
+echo "library=$LIBRARY\n";
+?>
