@@ -19,16 +19,22 @@ class sample extends _stationary
         super()
         switch @_processnumber
             when 0
-                if (@sprite.y > SCREEN_HEIGHT - @sprite.height)
-                    @sprite.y = SCREEN_HEIGHT - @sprite.height
-                    @sprite.ys *= -1
+                param = @getParameter()
+                if (param.y > (SCREEN_HEIGHT - (param.height / 2)))
+                    @setParameter
+                        y: (SCREEN_HEIGHT - (param.height / 2))
+                        ys: -param.ys
 
-                if (@sprite.x > SCREEN_WIDTH - @sprite.width)
-                    @sprite.x = SCREEN_WIDTH - @sprite.width
+                if (param.x > SCREEN_WIDTH - param.width / 2)
+                    param.x = SCREEN_WIDTH - param.width / 2
                     @sprite.xs *= -1
-                if (@sprite.x < 0)
-                    @sprite.x = 0
-                    @sprite.xs *= -1
+                    @setParameter
+                        scaleX: -param.scaleX
+                if (param.x < param.width / 2)
+                    @setParameter
+                        x: param.width / 2
+                        xs: -param.xs
+                        scaleX: -param.scaleX
 
 
     #**************************

@@ -27,6 +27,10 @@ TOPSCENE            = 6
 
 # グローバル初期化
 
+# センサー系
+MOTION_ACCEL        = [x:0, y:0, z:0]
+MOTION_GRAVITY      = [x:0, y:0, z:0]
+MOTION_ROTATE       = [alpha:0, beta:0, gamma:0]
 # ゲーム起動時からの経過時間（秒）
 LAPSEDTIME          = 0
 # 3D系
@@ -69,6 +73,13 @@ window.onload = ->
             imagearr[i++] = MEDIALIST[obj]
         core.preload(imagearr)
     rootScene = core.rootScene
+    window.addEventListener 'devicemotion', (e)=>
+        MOTION_ACCEL = e.acceleration
+        MOTION_GRAVITY = e.accelerationIncludingGravity
+    window.addEventListener 'deviceorientation', (e)=>
+        MOTION_ROTATE.alpha = e.alpha
+        MOTION_ROTATE.beta = e.beta
+        MOTION_ROTATE.gamma = e.gamma
 
     # シーングループを生成
     for i in [0...(TOPSCENE+1)]
@@ -98,8 +109,8 @@ addObject = (param)->
     ys = if (param.ys?) then param.ys else 0.0
     gravity = if (param.gravity?) then param.gravity else 0.0
     image = if (param.image?) then param.image else undefined
-    cellx = if (param.cellx?) then param.cellx else 0.0
-    celly = if (param.celly?) then param.celly else 0.0
+    width = if (param.width?) then param.width else 0.0
+    height = if (param.height?) then param.height else 0.0
     opacity = if (param.opacity?) then param.opacity else 1.0
     animlist = if (param.animlist?) then param.animlist else undefined
     animnum = if (param.animnum?) then param.animnum else 0
@@ -110,6 +121,8 @@ addObject = (param)->
     friction = if (param.friction?) then param.friction else 0.5
     restitution = if (param.restitution?) then param.restitution else 0.1
     move = if (param.move?) then param.move else false
+    scaleX = if (param.scaleX?) then param.scaleX else 1.0
+    scaleY = if (param.scaleY?) then param.scaleY else 1.0
 
     if (motionObj == null)
         motionObj = undefined
@@ -135,27 +148,30 @@ addObject = (param)->
     # TimeLineを時間ベースにする
     motionsprite.tl.setTimeBased()
 
-    # スプライトを表示
-    _scenes[scene].addChild(motionsprite)
-
     # _typeによってスプライトを初期化する
-    switch _type
+    switch (_type)
         when SPRITE
             # パラメータ初期化
-            motionsprite.frame = 0
+            #motionsprite.originX = 0
+            #motionsprite.originY = 0
+            animtmp = animlist[animnum]
+            motionsprite.frame = animtmp[1][0]
+            motionsprite.blendMode = "lighter"
             motionsprite.backgroundColor = "transparent"
-            motionsprite.x = x
-            motionsprite.y = y
-            motionsprite._x_ = x
-            motionsprite._y_ = y
-            motionsprite.width = cellx
-            motionsprite.height = celly
-            motionsprite.originX = parseInt(cellx / 2)
-            motionsprite.originY = parseInt(celly / 2)
+            motionsprite.width = width
+            motionsprite.height = height
+            motionsprite.diffx = parseInt(width / 2)
+            motionsprite.diffy = parseInt(height / 2)
+            motionsprite._x_ = x - motionsprite.diffx
+            motionsprite._y_ = y - motionsprite.diffy
+            motionsprite.x = Math.floor(motionsprite._x_)
+            motionsprite.y = Math.floor(motionsprite._y_)
+            motionsprite.xback = motionsprite.x
+            motionsprite.yback = motionsprite.y
             motionsprite.opacity = opacity
             motionsprite.rotation = 0.0
-            motionsprite.scaleX = 1.0
-            motionsprite.scaleY = 1.0
+            motionsprite.scaleX = scaleX
+            motionsprite.scaleY = scaleY
             motionsprite.visible = visible
             motionsprite.intersectFlag = true
             motionsprite.animlist = animlist
@@ -163,6 +179,9 @@ addObject = (param)->
             motionsprite.xs = xs
             motionsprite.ys = ys
             motionsprite.gravity = gravity
+
+    # スプライトを表示
+    _scenes[scene].addChild(motionsprite)
 
     # 動きを定義したオブジェクトを生成する
     if (motionObj != undefined)
@@ -202,10 +221,11 @@ removeObject = (motionObj)->
     if (!motionObj?)
         return
     ret = false
-    for parent in _objects
-        if (!parent.motionObj?)
+    # 削除しようとしているmotionObjがオブジェクトリストのどこに入っているか探す
+    for object in _objects
+        if (!object.motionObj?)
             continue
-        if (parent.motionObj._uniqueID == motionObj._uniqueID)
+        if (object.motionObj._uniqueID == motionObj._uniqueID)
             ret = true
             break
     if (ret == false)
@@ -215,13 +235,13 @@ removeObject = (motionObj)->
         motionObj.destructor()
 
     if (motionObj._type == DSPRITE_BOX || motionObj._type == DSPRITE_CIRCLE || motionObj._type == SSPRITE_BOX || motionObj._type == SSPRITE_CIRCLE)
-        parent.motionObj.sprite.destroy()
+        object.motionObj.sprite.destroy()
     else
-        _scenes[parent.motionObj._scene].removeChild(parent.motionObj.sprite)
-    parent.motionObj.sprite = 0
+        _scenes[object.motionObj._scene].removeChild(object.motionObj.sprite)
+    object.motionObj.sprite = 0
 
-    parent.motionObj = 0
-    parent.active = false
+    object.motionObj = 0
+    object.active = false
 
 #**********************************************************************
 # オブジェクトリストの指定した番号のオブジェクトを返す

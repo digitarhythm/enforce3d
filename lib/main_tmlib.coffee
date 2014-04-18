@@ -18,6 +18,10 @@ _objects            = []
 _scenes             = []
 # 経過時間
 LAPSEDTIME          = 0
+# センサー系
+MOTION_ACCEL        = [x:0, y:0, z:0]
+MOTION_GRAVITY      = [x:0, y:0, z:0]
+MOTION_ROTATE       = [alpha:0, beta:0, gamma:0]
 
 #******************************************************************************
 # 定数定義
@@ -46,6 +50,14 @@ tm.main ->
     core.fps = FPS
     core.resize(SCREEN_WIDTH, SCREEN_HEIGHT)
     core.fitWindow()
+
+    window.addEventListener 'devicemotion', (e)=>
+        MOTION_ACCEL = e.acceleration
+        MOTION_GRAVITY = e.accelerationIncludingGravity
+    window.addEventListener 'deviceorientation', (e)=>
+        MOTION_ROTATE.alpha = e.alpha
+        MOTION_ROTATE.beta = e.beta
+        MOTION_ROTATE.gamma = e.gamma
 
     core.replaceScene customLoadingScene
         assets: MEDIALIST
@@ -146,13 +158,15 @@ addObject = (param)->
     zs = if (param.zs?) then param.zs else 0.0
     gravity = if (param.gravity?) then param.gravity else 0.0
     image = if (param.image?) then param.image else 0
-    cellx = if (param.cellx?) then param.cellx else 0.0
-    celly = if (param.celly?) then param.celly else 0.0
+    width = if (param.width?) then param.width else 0.0
+    height = if (param.height?) then param.height else 0.0
     opacity = if (param.opacity?) then param.opacity else 1.0
     animlist = if (param.animlist?) then param.animlist else [[0]]
     animnum = if (param.animnum?) then param.animnum else 0
     visible = if (param.visible?) then param.visible else true
     scene = if (param.scene?) then param.scene else -1
+    scaleX = if (param.scaleX?) then param.scaleX else 1.0
+    scaleY = if (param.scaleY?) then param.scaleY else 1.0
 
     if (scene < 0)
         scene = GAMESCENE
@@ -165,26 +179,30 @@ addObject = (param)->
     obj.active = true
 
     # スプライト生成
-    motionsprite = tm.display.Sprite(image, cellx, celly)
+    motionsprite = tm.display.Sprite(image, width, height)
 
     # スプライト生成
     switch (type)
         when SPRITE
+            motionsprite.visible = false
             motionsprite._x_ = x
             motionsprite._y_ = y
-            motionsprite.setOrigin(0, 0)
-            motionsprite.setPosition(x, y)
+            motionsprite.x = Math.floor(motionsprite._x_)
+            motionsprite.y = Math.floor(motionsprite._y_)
+            motionsprite.xback = motionsprite.x
+            motionsprite.yback = motionsprite.y
             animtmp = animlist[animnum]
             motionsprite.frameIndex = animtmp[1][0]
             motionsprite.blendMode = "lighter"
             motionsprite.alpha = opacity
             #motionsprite.blendMode = blendmode
-            motionsprite.width = cellx
-            motionsprite.height = celly
+            motionsprite.width = width
+            motionsprite.height = height
+            motionsprite.diffx = 0
+            motionsprite.diffy = 0
             motionsprite.rotation = 0.0
-            motionsprite.scaleX = 1.0
-            motionsprite.scaleY = 1.0
-            motionsprite.visible = visible
+            motionsprite.scaleX = scaleX
+            motionsprite.scaleY = scaleY
             motionsprite.intersectFlag = true
             motionsprite.animlist = animlist
             motionsprite.animnum = animnum
@@ -194,7 +212,9 @@ addObject = (param)->
             motionsprite.setInteractive(true)
             motionsprite.checkHierarchy = true
 
-            _scenes[scene].addChild(motionsprite)
+    # スプライトを表示
+    _scenes[scene].addChild(motionsprite)
+    motionsprite.visible = visible
 
     # フレーム毎の処理
     motionsprite.update = ->
@@ -252,20 +272,6 @@ getObject = (id)->
             break
     return ret
 
-#**********************************************************************
-# スプライトの各種パラメータを設定する
-#**********************************************************************
-setParam = (param)->
-    x = if (param.x?) then param.x else 0.0
-    y = if (param.y?) then param.y else 0.0
-    xs = if (param.xs?) then param.xs else 0.0
-    ys = if (param.ys?) then param.ys else 0.0
-    gravity = if (param.gravity?) then param.gravity else 0.0
-    opacity = if (param.opacity?) then param.opacity else 1.0
-    animnum = if (param.animnum?) then param.animnum else 0
-    visible = if (param.visible?) then param.visible else true
-    scene = if (param.scene?) then param.scene else -1
-    
 #**********************************************************************
 #**********************************************************************
 #**********************************************************************
