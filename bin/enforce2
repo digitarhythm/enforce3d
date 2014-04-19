@@ -9,6 +9,11 @@ cwd=$(cd $(dirname $0);pwd)
 ##################################################
 # enforce version check
 ##################################################
+if [ ! -f "./lib/version" ]; then
+    echo "Please perform in a package directory."
+    exit
+fi
+
 if [ "$opt" != "new" ]; then
     OLDIFS=$IFS
     IFS=
