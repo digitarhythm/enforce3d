@@ -4,9 +4,9 @@ class enforceMain
         obj = addObject
             motionObj: sample
             type: SPRITE
-            x: 160
-            y: 100 
-            gravity: 3.0
+            x: SCREEN_WIDTH / 2
+            y: 100
+            gravity: 1.0
             xs: dir
             image: 'chara1'
             width: 32

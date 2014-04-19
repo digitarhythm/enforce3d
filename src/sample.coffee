@@ -19,23 +19,19 @@ class sample extends _stationary
         super()
         switch @_processnumber
             when 0
-                param = @getParameter()
-                if (param.y > (SCREEN_HEIGHT - (param.height / 2)))
-                    @setParameter
-                        y: (SCREEN_HEIGHT - (param.height / 2))
-                        ys: -param.ys
+                if (@y > SCREEN_HEIGHT - (@height / 2))
+                    @y = SCREEN_HEIGHT - (@height / 2)
+                    @ys = -@ys
 
-                if (param.x > SCREEN_WIDTH - param.width / 2)
-                    param.x = SCREEN_WIDTH - param.width / 2
-                    @sprite.xs *= -1
-                    @setParameter
-                        scaleX: -param.scaleX
-                if (param.x < param.width / 2)
-                    @setParameter
-                        x: param.width / 2
-                        xs: -param.xs
-                        scaleX: -param.scaleX
+                if (@x > SCREEN_WIDTH - @width / 2)
+                    @x = SCREEN_WIDTH - @width / 2
+                    @xs = -@xs
+                    @scaleX = -@scaleX
 
+                if (@x < @width / 2)
+                    @x = @width / 2
+                    @xs = -@xs
+                    @scaleX = -@scaleX
 
     #**************************
     # touch event
