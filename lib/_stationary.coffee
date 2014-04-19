@@ -47,7 +47,7 @@ class _stationary
                     @touchesCanceled(pos)
 
         if (@sprite?)
-            @sprite.intersectFlag = true
+            @intersectFlag = true
 
     #***************************************************************
     # デストラクター
@@ -58,32 +58,35 @@ class _stationary
     # ビヘイビアー
     #***************************************************************
     behavior:->
+        # スプライトの座標等パラメータを更新する
         if (@_type == SPRITE && @sprite?)
-            if (@sprite.x != @sprite.xback)
-                @sprite._x_ = @sprite.x
-            if (@sprite.y != @sprite.yback)
-                @sprite._y_ = @sprite.y
-            @sprite.ys += @sprite.gravity
-            @sprite._x_ += @sprite.xs
-            @sprite._y_ += @sprite.ys
-            @sprite._z_ += @sprite.zs
-            @sprite.x = Math.floor(@sprite._x_)
-            @sprite.y = Math.floor(@sprite._y_)
-            @sprite.z = Math.floor(@sprite._z_)
-            @sprite.xback = @sprite.x
-            @sprite.yback = @sprite.y
-            @sprite.zback = @sprite.z
+            @sprite.x = Math.floor(@x - @diffx)
+            @sprite.y = Math.floor(@y - @diffy)
 
-        if (@_type < 5)
+            @ys += @gravity
+
+            @x += @xs
+            @y += @ys
+
+            if (LIBRARY == "tmlib")
+                @sprite.alpha = @opacity
+            else if (LIBRARY == "enchant")
+                @sprite.opacity = @opacity
+
+            @sprite.visible = @visible
+            @sprite.scaleX  = @scaleX
+            @sprite.scaleY  = @scaleY
+
+        if (@_type == SPRITE)
             # 画面外に出たら自動的に消滅する
             if (@sprite.x < -@sprite.width || @sprite.x > SCREEN_WIDTH || @sprite.y < -@sprite.height || @sprite.y > SCREEN_HEIGHT || @_autoRemove == true)
                 if (typeof(@autoRemove) == 'function')
                     @autoRemove()
                     removeObject(@)
 
-            if (@sprite.animlist?)
+            if (@animlist?)
                 #JSLog("frame=%@, x=%@, y=%@", @_dispframe, @sprite.x, @sprite.y)
-                animtmp = @sprite.animlist[@sprite.animnum]
+                animtmp = @animlist[@animnum]
                 animtime = animtmp[0]
                 #JSLog("lap=%@, animtime=%@", LAPSEDTIME * 1000, @_animTime)
                 animpattern = animtmp[1]
@@ -98,7 +101,7 @@ class _stationary
                         return
                     else if (@_returnflag == true)
                         @_returnflag = false
-                        @sprite.animnum = @_beforeAnimnum
+                        @animnum = @_beforeAnimnum
                         @_dispframe = 0
                     else
                         @_dispframe = 0
@@ -155,7 +158,7 @@ class _stationary
             return false
         if (range < 0)
             range = motionObj.sprite.width / 2
-        if (@sprite.intersectFlag == true && motionObj.sprite.intersectFlag == true)
+        if (@intersectFlag == true && motionObj.intersectFlag == true)
             ret = @sprite.within(motionObj.sprite, range)
         else
             ret = false
@@ -168,14 +171,14 @@ class _stationary
         if (LIBRARY == "tmlib")
             if (!motionObj.sprite?)
                 return false
-            if (@sprite.intersectFlag == true && motionObj.sprite.intersectFlag == true)
+            if (@intersectFlag == true && motionObj.intersectFlag == true)
                 ret = @sprite.isHitElement(motionObj.sprite)
             else
                 ret = false
         else if (LIBRARY == "enchant")
             if (!motionObj.sprite?)
                 return false
-            if (@sprite.intersectFlag == true && motionObj.sprite.intersectFlag == true)
+            if (@intersectFlag == true && motionObj.intersectFlag == true)
                 ret = @sprite.intersect(motionObj.sprite)
             else
                 ret = false
@@ -185,7 +188,7 @@ class _stationary
     # 指定されたアニメーションを再生した後オブジェクト削除
     #***************************************************************
     setAnimationToRemove:(animnum)->
-        @sprite.animnum = animnum
+        @animnum = animnum
         @_dispframe = 0
         @_endflag = true
 
@@ -194,7 +197,7 @@ class _stationary
     #***************************************************************
     setAnimationToOnce:(animnum, animnum2)->
         @_beforeAnimnum = animnum2
-        @sprite.animnum = animnum
+        @animnum = animnum
         @_dispframe = 0
         @_returnflag = true
 
@@ -204,90 +207,6 @@ class _stationary
     setModel:(name)->
         model = MEDIALIST[name]
         @set(core.assets[model])
-
-    #***************************************************************
-    # スプライトパラメータを取得する
-    #***************************************************************
-    getParameter:->
-        if (LIBRARY == "tmlib")
-            opacity = @sprite.alpha
-        else if (LIBRARY == "enchant")
-            opacity = @sprite.opacity
-        param = {
-            x: @sprite._x_ + @sprite.diffx
-            y: @sprite._y_ + @sprite.diffy
-            xs: @sprite.xs
-            ys: @sprite.ys
-            gravity: @sprite.grabity
-            image: @sprite.image
-            width: @sprite.width
-            height: @sprite.height
-            opacity: opacity
-            animlist:@sprite.animlist
-            animnum: @sprite.animnum
-            visible: @sprite.visible
-            scene: @scene
-            scaleX: @sprite.scaleX
-            scaleY: @sprite.scaleY
-        }
-        return param
-
-    #***************************************************************
-    # スプライトパラメータを設定する
-    #***************************************************************
-    setParameter:(param)->
-        x = if (param.x?) then param.x else undefined
-        y = if (param.y?) then param.y else undefined
-        xs = if (param.xs?) then param.xs else undefined
-        ys = if (param.ys?) then param.ys else undefined
-        gravity = if (param.gravity?) then param.gravity else undefined
-        image = if (param.image?) then param.image else undefined
-        width = if (param.width?) then param.width else undefined
-        height = if (param.height?) then param.height else undefined
-        opacity = if (param.opacity?) then param.opacity else undefined
-        animlist = if (param.animlist?) then param.animlist else undefined
-        animnum = if (param.animnum?) then param.animnum else undefined
-        visible = if (param.visible?) then param.visible else undefined
-        scene = if (param.scene?) then param.scene else undefined
-        scaleX = if (param.scaleX?) then param.scaleX else undefined
-        scaleY = if (param.scaleY?) then param.scaleY else undefined
-
-        if (x?)
-            @sprite.x = x - @sprite.diffx
-        if (y?)
-            @sprite.y = y - @sprite.diffy
-        if (xs?)
-            @sprite.xs = xs
-        if (ys?)
-            @sprite.ys = ys
-        if (gravity?)
-            @sprite.gravity = gravity
-        if (image?)
-            @sprite.image = image
-        if (width?)
-            @sprite.width = width
-        if (height?)
-            @sprite.height = height
-        if (opacity?)
-            if (LIBRARY == "tmlib")
-                @sprite.alpha = opacity
-            else
-                @sprite.opacity = opacity
-        if (animlist?)
-            @sprite.animlist = animlist
-        if (animnum?)
-            @sprite.animnum = animnum
-        if (visible?)
-            @sprite.visible = visible
-        if (scene?)
-            if (@scene != scene)
-                @scene.removeChild(@sprite)
-                scene.addChild(@sprite)
-                @scene = scene
-        if (scaleX?)
-            @sprite.scaleX = scaleX
-        if (scaleY?)
-            @sprite.scaleY = scaleY
 
     #***************************************************************
     # スプライトをfadeInさせる（現在はenchantのみ）
@@ -329,11 +248,3 @@ class _stationary
         if (LIBRARY == "enchant")
             @sprite.tl.clear()
 
-    #***************************************************************
-    # スプライトの角度を設定する
-    #***************************************************************
-    rotate:(rad)->
-        if (LIBRARY == "tmlib")
-            @sprite.rotation = rad
-        else if (LIBRARY == "enchant")
-            @sprite.rotation = rad

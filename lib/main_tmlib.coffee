@@ -141,7 +141,6 @@ tm.define "mainScene", {
 
     onenterframe:->
         LAPSEDTIME = parseFloat((core.frame / FPS).toFixed(2))
-
 }
 
 #**********************************************************************
@@ -184,33 +183,21 @@ addObject = (param)->
     # スプライト生成
     switch (type)
         when SPRITE
-            motionsprite.visible = false
-            motionsprite._x_ = x
-            motionsprite._y_ = y
-            motionsprite.x = Math.floor(motionsprite._x_)
-            motionsprite.y = Math.floor(motionsprite._y_)
-            motionsprite.xback = motionsprite.x
-            motionsprite.yback = motionsprite.y
             animtmp = animlist[animnum]
             motionsprite.frameIndex = animtmp[1][0]
-            motionsprite.blendMode = "lighter"
+            motionsprite.fillStyle = "transparent"
+            motionsprite.x = x
+            motionsprite.y = y
             motionsprite.alpha = opacity
-            #motionsprite.blendMode = blendmode
-            motionsprite.width = width
-            motionsprite.height = height
-            motionsprite.diffx = 0
-            motionsprite.diffy = 0
             motionsprite.rotation = 0.0
             motionsprite.scaleX = scaleX
             motionsprite.scaleY = scaleY
-            motionsprite.intersectFlag = true
-            motionsprite.animlist = animlist
-            motionsprite.animnum = animnum
-            motionsprite.xs = xs
-            motionsprite.ys = ys
-            motionsprite.gravity = gravity
-            motionsprite.setInteractive(true)
+            motionsprite.visible = false
+            motionsprite.width = width
+            motionsprite.height = height
+            motionsprite.blendMode = "source-over"
             motionsprite.checkHierarchy = true
+            motionsprite.setInteractive(true)
 
     # スプライトを表示
     _scenes[scene].addChild(motionsprite)
@@ -231,6 +218,27 @@ addObject = (param)->
     obj.motionObj._uniqueID = uid
     obj.motionObj._scene = scene
     obj.motionObj._type = type
+
+    if (motionsprite != undefined)
+        obj.motionObj.x = x
+        obj.motionObj.y = y
+        obj.motionObj.oldx = x
+        obj.motionObj.oldy = y
+        obj.motionObj.xs = xs
+        obj.motionObj.ys = ys
+        obj.motionObj.oldys = ys
+        obj.motionObj.visible = visible
+        obj.motionObj.scaleX = scaleX
+        obj.motionObj.scaleY = scaleY
+        obj.motionObj.gravity = gravity
+        obj.motionObj.intersectFlag = true
+        obj.motionObj.width = width
+        obj.motionObj.height = height
+        obj.motionObj.diffx = 0
+        obj.motionObj.diffy = 0
+        obj.motionObj.animlist = animlist
+        obj.motionObj.animnum = animnum
+        obj.motionObj.alpha = opacity
 
     return obj.motionObj
 

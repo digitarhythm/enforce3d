@@ -94,6 +94,9 @@ window.onload = ->
         _main = new enforceMain()
         rootScene.addEventListener 'enterframe', (e)->
             LAPSEDTIME = parseFloat((core.frame / FPS).toFixed(2))
+            for obj in _objects
+                if (obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
+                    obj.motionObj.behavior()
     core.start()
 
 #******************************************************************************
@@ -152,33 +155,19 @@ addObject = (param)->
     switch (_type)
         when SPRITE
             # パラメータ初期化
-            #motionsprite.originX = 0
-            #motionsprite.originY = 0
             animtmp = animlist[animnum]
             motionsprite.frame = animtmp[1][0]
-            motionsprite.blendMode = "lighter"
             motionsprite.backgroundColor = "transparent"
-            motionsprite.width = width
-            motionsprite.height = height
-            motionsprite.diffx = parseInt(width / 2)
-            motionsprite.diffy = parseInt(height / 2)
-            motionsprite._x_ = x - motionsprite.diffx
-            motionsprite._y_ = y - motionsprite.diffy
-            motionsprite.x = Math.floor(motionsprite._x_)
-            motionsprite.y = Math.floor(motionsprite._y_)
-            motionsprite.xback = motionsprite.x
-            motionsprite.yback = motionsprite.y
+            motionsprite.x = x - Math.floor(width / 2)
+            motionsprite.y = y - Math.floor(height / 2)
             motionsprite.opacity = opacity
             motionsprite.rotation = 0.0
             motionsprite.scaleX = scaleX
             motionsprite.scaleY = scaleY
             motionsprite.visible = visible
-            motionsprite.intersectFlag = true
-            motionsprite.animlist = animlist
-            motionsprite.animnum = animnum
-            motionsprite.xs = xs
-            motionsprite.ys = ys
-            motionsprite.gravity = gravity
+            motionsprite.width = width
+            motionsprite.height = height
+
 
     # スプライトを表示
     _scenes[scene].addChild(motionsprite)
@@ -194,10 +183,25 @@ addObject = (param)->
     obj.motionObj._scene = scene
 
     if (motionsprite != undefined)
-        # イベント定義
-        motionsprite.addEventListener 'enterframe', ->
-            if (obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
-                obj.motionObj.behavior()
+        obj.motionObj.x = x
+        obj.motionObj.y = y
+        obj.motionObj.oldx = x
+        obj.motionObj.oldy = y
+        obj.motionObj.xs = xs
+        obj.motionObj.ys = ys
+        obj.motionObj.oldys = ys
+        obj.motionObj.visible = visible
+        obj.motionObj.scaleX = scaleX
+        obj.motionObj.scaleY = scaleY
+        obj.motionObj.gravity = gravity
+        obj.motionObj.intersectFlag = true
+        obj.motionObj.width = width
+        obj.motionObj.height = height
+        obj.motionObj.diffx = Math.floor(width / 2)
+        obj.motionObj.diffy = Math.floor(height / 2)
+        obj.motionObj.animlist = animlist
+        obj.motionObj.animnum = animnum
+        obj.motionObj.opacity = opacity
 
     # 画像割り当て
     if (MEDIALIST[image]? && animlist?)
