@@ -3,8 +3,8 @@ class [__classname__] extends _stationary
     #**************************
     # character constructor
     #**************************
-    constructor:(@sprite)->
-        super(@sprite)
+    constructor:(initparam)->
+        super(initparam)
 
     #**************************
     # character destructor

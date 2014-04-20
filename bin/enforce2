@@ -9,21 +9,24 @@ cwd=$(cd $(dirname $0);pwd)
 ##################################################
 # enforce version check
 ##################################################
-if [ ! -f "./lib/version" ]; then
-    echo "Please perform in a package directory."
-    exit
-fi
-
 if [ "$opt" != "new" ]; then
+    if [ ! -f "./lib/version" ]; then
+        echo "Please perform in a package directory."
+        exit
+    fi
+
     OLDIFS=$IFS
     IFS=
     exec < $LIB/version
     echo ${version}
+
     while read DATA
     do
         version=$DATA
     done
+
     IFS=$OLDIFS
+
     if [ "$version" != "2.0" ]; then
         echo "version unmatched."
         exit

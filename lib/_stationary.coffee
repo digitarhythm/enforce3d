@@ -2,7 +2,7 @@ class _stationary
     #***************************************************************
     # コンストラクター
     #***************************************************************
-    constructor:(@sprite)->
+    constructor:(initparam)->
         @_processnumber = 0
         @_waittime = 0.0
         @_dispframe = 0
@@ -10,43 +10,64 @@ class _stationary
         @_returnflag = false
         @_autoRemove = false
         @_animTime = LAPSEDTIME * 1000
-
-        if (LIBRARY == "enchant")
-            @sprite.ontouchstart = (e)=>
-                pos = {x:e.x, y:e.y}
-                if (typeof @touchesBegan == 'function')
-                    @touchesBegan(pos)
-            @sprite.ontouchmove = (e)=>
-                pos = {x:e.x, y:e.y}
-                if (typeof @touchesMoved == 'function')
-                    @touchesMoved(pos)
-            @sprite.ontouchend = (e)=>
-                pos = {x:e.x, y:e.y}
-                if (typeof @touchesEnded == 'function')
-                    @touchesEnded(pos)
-            @sprite.ontouchcancel = (e)=>
-                pos = {x:e.x, y:e.y}
-                if (typeof @touchesCanceled == 'function')
-                    @touchesCanceled(pos)
-        else if (LIBRARY == "tmlib")
-            @sprite.onpointingstart = (e)=>
-                pos = {x:e.pointing.position.x, y:e.pointing.position.y}
-                if (typeof @touchesBegan == 'function')
-                    @touchesBegan(pos)
-            @sprite.onpointingmove = (e)=>
-                pos = {x:e.pointing.position.x, y:e.pointing.position.y}
-                if (typeof @touchesMoved == 'function')
-                    @touchesMoved(pos)
-            @sprite.onpointingend = (e)=>
-                pos = {x:e.pointing.position.x, y:e.pointing.position.y}
-                if (typeof @touchesEnded == 'function')
-                    @touchesEnded(pos)
-            @sprite.onpointingcancel = (e)=>
-                pos = {x:e.pointing.position.x, y:e.pointing.position.y}
-                if (typeof @touchesCanceled == 'function')
-                    @touchesCanceled(pos)
+        @sprite = initparam['motionsprite']
 
         if (@sprite?)
+            @x = initparam['x']
+            @y = initparam['y']
+            @oldx = initparam['oldx']
+            @oldy = initparam['oldy']
+            @xs = initparam['xs']
+            @ys = initparam['ys']
+            @oldys = initparam['oldys']
+            @visible = initparam['visible']
+            @scaleX = initparam['scaleX']
+            @scaleY = initparam['scaleY']
+            @gravity = initparam['gravity']
+            @intersectFlag = initparam['intersectFlag']
+            @width = initparam['width']
+            @height = initparam['height']
+            @diffx = initparam['diffx']
+            @diffy = initparam['diffy']
+            @animlist = initparam['animlist']
+            @animnum = initparam['animnum']
+            @opacity = initparam['opacity']
+
+            if (LIBRARY == "enchant")
+                @sprite.ontouchstart = (e)=>
+                    pos = {x:e.x, y:e.y}
+                    if (typeof @touchesBegan == 'function')
+                        @touchesBegan(pos)
+                @sprite.ontouchmove = (e)=>
+                    pos = {x:e.x, y:e.y}
+                    if (typeof @touchesMoved == 'function')
+                        @touchesMoved(pos)
+                @sprite.ontouchend = (e)=>
+                    pos = {x:e.x, y:e.y}
+                    if (typeof @touchesEnded == 'function')
+                        @touchesEnded(pos)
+                @sprite.ontouchcancel = (e)=>
+                    pos = {x:e.x, y:e.y}
+                    if (typeof @touchesCanceled == 'function')
+                        @touchesCanceled(pos)
+            else if (LIBRARY == "tmlib")
+                @sprite.onpointingstart = (e)=>
+                    pos = {x:e.pointing.position.x, y:e.pointing.position.y}
+                    if (typeof @touchesBegan == 'function')
+                        @touchesBegan(pos)
+                @sprite.onpointingmove = (e)=>
+                    pos = {x:e.pointing.position.x, y:e.pointing.position.y}
+                    if (typeof @touchesMoved == 'function')
+                        @touchesMoved(pos)
+                @sprite.onpointingend = (e)=>
+                    pos = {x:e.pointing.position.x, y:e.pointing.position.y}
+                    if (typeof @touchesEnded == 'function')
+                        @touchesEnded(pos)
+                @sprite.onpointingcancel = (e)=>
+                    pos = {x:e.pointing.position.x, y:e.pointing.position.y}
+                    if (typeof @touchesCanceled == 'function')
+                        @touchesCanceled(pos)
+
             @intersectFlag = true
 
     #***************************************************************
@@ -77,34 +98,33 @@ class _stationary
             @sprite.scaleX  = @scaleX
             @sprite.scaleY  = @scaleY
 
-        if (@_type == SPRITE)
-            # 画面外に出たら自動的に消滅する
-            if (@sprite.x < -@sprite.width || @sprite.x > SCREEN_WIDTH || @sprite.y < -@sprite.height || @sprite.y > SCREEN_HEIGHT || @_autoRemove == true)
-                if (typeof(@autoRemove) == 'function')
-                    @autoRemove()
-                    removeObject(@)
-
-            if (@animlist?)
-                #JSLog("frame=%@, x=%@, y=%@", @_dispframe, @sprite.x, @sprite.y)
-                animtmp = @animlist[@animnum]
-                animtime = animtmp[0]
-                #JSLog("lap=%@, animtime=%@", LAPSEDTIME * 1000, @_animTime)
-                animpattern = animtmp[1]
-                if (LAPSEDTIME * 1000 > @_animTime + animtime)
-                    @sprite.frameIndex = animpattern[@_dispframe++]
-                    @sprite.frame = animpattern[@_dispframe++]
-                    @_animTime = LAPSEDTIME * 1000
-                if (@_dispframe >= animpattern.length)
-                    if (@_endflag == true)
-                        @_endflag = false
+            if (@_type == SPRITE)
+                # 画面外に出たら自動的に消滅する
+                if (@sprite.x < -@sprite.width || @sprite.x > SCREEN_WIDTH || @sprite.y < -@sprite.height || @sprite.y > SCREEN_HEIGHT || @_autoRemove == true)
+                    if (typeof(@autoRemove) == 'function')
+                        @autoRemove()
                         removeObject(@)
-                        return
-                    else if (@_returnflag == true)
-                        @_returnflag = false
-                        @animnum = @_beforeAnimnum
-                        @_dispframe = 0
-                    else
-                        @_dispframe = 0
+
+                if (@animlist?)
+                    animtmp = @animlist[@animnum]
+                    animtime = animtmp[0]
+                    animpattern = animtmp[1]
+                    if (LAPSEDTIME * 1000 > @_animTime + animtime)
+                        @sprite.frameIndex = animpattern[@_dispframe]
+                        @sprite.frame = animpattern[@_dispframe]
+                        @_animTime = LAPSEDTIME * 1000
+                        @_dispframe++
+                    if (@_dispframe >= animpattern.length)
+                        if (@_endflag == true)
+                            @_endflag = false
+                            removeObject(@)
+                            return
+                        else if (@_returnflag == true)
+                            @_returnflag = false
+                            @animnum = @_beforeAnimnum
+                            @_dispframe = 0
+                        else
+                            @_dispframe = 0
 
         if (@_waittime > 0 && LAPSEDTIME > @_waittime)
             @_waittime = 0
@@ -248,3 +268,8 @@ class _stationary
         if (LIBRARY == "enchant")
             @sprite.tl.clear()
 
+    #***************************************************************
+    # 角度を設定する
+    #***************************************************************
+    setRotate:(rad)->
+        @sprite.rotation = rad

@@ -47,6 +47,7 @@ TOPSCENE            = 6
 #******************************************************************************
 tm.main ->
     core = tm.display.CanvasApp("#stage")
+    core.background = BGCOLOR
     core.fps = FPS
     core.resize(SCREEN_WIDTH, SCREEN_HEIGHT)
     core.fitWindow()
@@ -141,6 +142,9 @@ tm.define "mainScene", {
 
     onenterframe:->
         LAPSEDTIME = parseFloat((core.frame / FPS).toFixed(2))
+        for obj in _objects
+            if (obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
+                obj.motionObj.behavior()
 }
 
 #**********************************************************************
@@ -156,11 +160,11 @@ addObject = (param)->
     ys = if (param.ys?) then param.ys else 0.0
     zs = if (param.zs?) then param.zs else 0.0
     gravity = if (param.gravity?) then param.gravity else 0.0
-    image = if (param.image?) then param.image else 0
+    image = if (param.image?) then param.image else undefined
     width = if (param.width?) then param.width else 0.0
     height = if (param.height?) then param.height else 0.0
     opacity = if (param.opacity?) then param.opacity else 1.0
-    animlist = if (param.animlist?) then param.animlist else [[0]]
+    animlist = if (param.animlist?) then param.animlist else undefined
     animnum = if (param.animnum?) then param.animnum else 0
     visible = if (param.visible?) then param.visible else true
     scene = if (param.scene?) then param.scene else -1
@@ -178,67 +182,60 @@ addObject = (param)->
     obj.active = true
 
     # スプライト生成
-    motionsprite = tm.display.Sprite(image, width, height)
-
-    # スプライト生成
     switch (type)
         when SPRITE
+            motionsprite = tm.display.Sprite(image, width, height)
             animtmp = animlist[animnum]
             motionsprite.frameIndex = animtmp[1][0]
-            motionsprite.fillStyle = "transparent"
             motionsprite.x = x
             motionsprite.y = y
             motionsprite.alpha = opacity
             motionsprite.rotation = 0.0
             motionsprite.scaleX = scaleX
             motionsprite.scaleY = scaleY
-            motionsprite.visible = false
+            motionsprite.visible = visible
             motionsprite.width = width
             motionsprite.height = height
             motionsprite.blendMode = "source-over"
             motionsprite.checkHierarchy = true
             motionsprite.setInteractive(true)
+        else
+            motionsprite = undefined
 
     # スプライトを表示
-    _scenes[scene].addChild(motionsprite)
-    motionsprite.visible = visible
-
-    # フレーム毎の処理
-    motionsprite.update = ->
-        if (obj.motionObj? && typeof obj.motionObj.behavior == 'function')
-            obj.motionObj.behavior()
-            
+    if (motionsprite?)
+        _scenes[scene].addChild(motionsprite)
 
     # 動きを定義したオブジェクトを生成する
+    initparam = []
+    initparam['x'] = x
+    initparam['y'] = y
+    initparam['oldx'] = x
+    initparam['oldy'] = y
+    initparam['xs'] = xs
+    initparam['ys'] = ys
+    initparam['oldys'] = ys
+    initparam['visible'] = visible
+    initparam['scaleX'] = scaleX
+    initparam['scaleY'] = scaleY
+    initparam['gravity'] = gravity
+    initparam['intersectFlag'] = true
+    initparam['width'] = width
+    initparam['height'] = height
+    initparam['diffx'] = 0
+    initparam['diffy'] = 0
+    initparam['animlist'] = animlist
+    initparam['animnum'] = animnum
+    initparam['opacity'] = opacity
+    initparam['motionsprite'] = motionsprite
     if (motionObj?)
-        obj.motionObj = new motionObj(motionsprite)
+        obj.motionObj = new motionObj(initparam)
     else
-        obj.motionObj = new _stationary(motionsprite)
+        obj.motionObj = new _stationary(initparam)
     uid = uniqueID()
     obj.motionObj._uniqueID = uid
     obj.motionObj._scene = scene
     obj.motionObj._type = type
-
-    if (motionsprite != undefined)
-        obj.motionObj.x = x
-        obj.motionObj.y = y
-        obj.motionObj.oldx = x
-        obj.motionObj.oldy = y
-        obj.motionObj.xs = xs
-        obj.motionObj.ys = ys
-        obj.motionObj.oldys = ys
-        obj.motionObj.visible = visible
-        obj.motionObj.scaleX = scaleX
-        obj.motionObj.scaleY = scaleY
-        obj.motionObj.gravity = gravity
-        obj.motionObj.intersectFlag = true
-        obj.motionObj.width = width
-        obj.motionObj.height = height
-        obj.motionObj.diffx = 0
-        obj.motionObj.diffy = 0
-        obj.motionObj.animlist = animlist
-        obj.motionObj.animnum = animnum
-        obj.motionObj.alpha = opacity
 
     return obj.motionObj
 

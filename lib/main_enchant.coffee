@@ -16,6 +16,10 @@
 # オブジェクトの種類
 CONTROL             = 0
 SPRITE              = 1
+DSPRITE_BOX         = 2
+DSPRITE_CIRCLE      = 3
+SSPRITE_BOX         = 4
+SSPRITE_CIRCLE      = 5
 # Sceneの種類
 BGSCENE             = 0
 BGSCENE_SUB1        = 1
@@ -168,52 +172,44 @@ addObject = (param)->
             motionsprite.width = width
             motionsprite.height = height
 
-
-    # スプライトを表示
-    _scenes[scene].addChild(motionsprite)
-
-    # 動きを定義したオブジェクトを生成する
-    if (motionObj != undefined)
-        obj.motionObj = new motionObj(motionsprite)
-    else
-        obj.motionObj = new _stationary(motionsprite)
-
-    uid = uniqueID()
-    obj.motionObj._uniqueID = uid
-    obj.motionObj._scene = scene
-
-    if (motionsprite != undefined)
-        obj.motionObj.x = x
-        obj.motionObj.y = y
-        obj.motionObj.oldx = x
-        obj.motionObj.oldy = y
-        obj.motionObj.xs = xs
-        obj.motionObj.ys = ys
-        obj.motionObj.oldys = ys
-        obj.motionObj.visible = visible
-        obj.motionObj.scaleX = scaleX
-        obj.motionObj.scaleY = scaleY
-        obj.motionObj.gravity = gravity
-        obj.motionObj.intersectFlag = true
-        obj.motionObj.width = width
-        obj.motionObj.height = height
-        obj.motionObj.diffx = Math.floor(width / 2)
-        obj.motionObj.diffy = Math.floor(height / 2)
-        obj.motionObj.animlist = animlist
-        obj.motionObj.animnum = animnum
-        obj.motionObj.opacity = opacity
-
     # 画像割り当て
     if (MEDIALIST[image]? && animlist?)
         img = MEDIALIST[image]
         motionsprite.image = core.assets[img]
 
-    # 初期画像
-    if (animlist?)
-        animtmp = animlist[animnum]
-        animpattern = animtmp[1]
-        motionsprite.frame = animpattern[0]
+    # スプライトを表示
+    _scenes[scene].addChild(motionsprite)
 
+    # 動きを定義したオブジェクトを生成する
+    initparam = []
+    initparam['x'] = x
+    initparam['y'] = y
+    initparam['oldx'] = x
+    initparam['oldy'] = y
+    initparam['xs'] = xs
+    initparam['ys'] = ys
+    initparam['oldys'] = ys
+    initparam['visible'] = visible
+    initparam['scaleX'] = scaleX
+    initparam['scaleY'] = scaleY
+    initparam['gravity'] = gravity
+    initparam['intersectFlag'] = true
+    initparam['width'] = width
+    initparam['height'] = height
+    initparam['diffx'] = Math.floor(width / 2)
+    initparam['diffy'] = Math.floor(height / 2)
+    initparam['animlist'] = animlist
+    initparam['animnum'] = animnum
+    initparam['opacity'] = opacity
+    initparam['motionsprite'] = motionsprite
+    if (motionObj?)
+        obj.motionObj = new motionObj(initparam)
+    else
+        obj.motionObj = new _stationary(initparam)
+
+    uid = uniqueID()
+    obj.motionObj._uniqueID = uid
+    obj.motionObj._scene = scene
     obj.motionObj._type = _type
 
     return obj.motionObj
