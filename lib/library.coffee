@@ -34,5 +34,23 @@ _setEnchant =->
 _setTmlib =->
     LIBRARY = "tmlib"
 
+getKeyDirection =->
+    if (LIBRARY == "tmlib")
+        dir = core.keyboard.getKeyDirection()
+    else if (LIBRARY == "enchant")
+        dir = {
+            x: 0
+            y: 0
+        }
+        if (core.input.up)
+            dir['y'] = -1
+        if (core.input.down)
+            dir['y'] = 1
+        if (core.input.right)
+            dir['x'] = 1
+        if (core.input.left)
+            dir['x'] = -1
+    return dir
+
 # do noting
 nop =->

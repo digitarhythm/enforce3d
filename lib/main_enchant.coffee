@@ -101,6 +101,20 @@ window.onload = ->
             for obj in _objects
                 if (obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
                     obj.motionObj.behavior()
+            _objects.sort (a, b)->
+                if (a.motionObj? && b.motionObj? && a.motionObj.sprite? && b.motionObj.sprite?)
+                    a_num = a.motionObj.y + a.motionObj.z
+                    b_num = b.motionObj.y + b.motionObj.z
+                    if(a_num < b_num)
+                        return 1
+                    else if (a_num > b_num)
+                        return -1
+                    else
+                        return 0
+            for obj in _objects
+                if (obj.motionObj? && obj.motionObj.sprite?)
+                    _scenes[obj.motionObj._scene].removeChild(obj.motionObj.sprite)
+                    _scenes[obj.motionObj._scene].addChild(obj.motionObj.sprite)
     core.start()
 
 #******************************************************************************
@@ -112,8 +126,10 @@ addObject = (param)->
     _type = if (param.type?) then param.type else SPRITE
     x = if (param.x?) then param.x else 0.0
     y = if (param.y?) then param.y else 0.0
+    z = if (param.z?) then param.z else 0.0
     xs = if (param.xs?) then param.xs else 0.0
     ys = if (param.ys?) then param.ys else 0.0
+    zs = if (param.zs?) then param.zs else 0.0
     gravity = if (param.gravity?) then param.gravity else 0.0
     image = if (param.image?) then param.image else undefined
     width = if (param.width?) then param.width else 0.0
@@ -155,15 +171,14 @@ addObject = (param)->
     # TimeLineを時間ベースにする
     motionsprite.tl.setTimeBased()
 
-    # _typeによってスプライトを初期化する
+    # スプライト生成
     switch (_type)
         when SPRITE
-            # パラメータ初期化
             animtmp = animlist[animnum]
             motionsprite.frame = animtmp[1][0]
             motionsprite.backgroundColor = "transparent"
             motionsprite.x = x - Math.floor(width / 2)
-            motionsprite.y = y - Math.floor(height / 2)
+            motionsprite.y = y - Math.floor(height / 2) - Math.floor(z)
             motionsprite.opacity = opacity
             motionsprite.rotation = 0.0
             motionsprite.scaleX = scaleX
@@ -184,10 +199,13 @@ addObject = (param)->
     initparam = []
     initparam['x'] = x
     initparam['y'] = y
+    initparam['z'] = z
     initparam['oldx'] = x
     initparam['oldy'] = y
+    initparam['oldz'] = z
     initparam['xs'] = xs
     initparam['ys'] = ys
+    initparam['zs'] = zs
     initparam['oldys'] = ys
     initparam['visible'] = visible
     initparam['scaleX'] = scaleX

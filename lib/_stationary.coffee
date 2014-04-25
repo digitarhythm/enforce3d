@@ -15,10 +15,13 @@ class _stationary
         if (@sprite?)
             @x = initparam['x']
             @y = initparam['y']
+            @z = initparam['z']
             @oldx = initparam['oldx']
             @oldy = initparam['oldy']
+            @oldz = initparam['oldz']
             @xs = initparam['xs']
             @ys = initparam['ys']
+            @zs = initparam['zs']
             @oldys = initparam['oldys']
             @visible = initparam['visible']
             @scaleX = initparam['scaleX']
@@ -82,12 +85,13 @@ class _stationary
         # スプライトの座標等パラメータを更新する
         if (@_type == SPRITE && @sprite?)
             @sprite.x = Math.floor(@x - @diffx)
-            @sprite.y = Math.floor(@y - @diffy)
+            @sprite.y = Math.floor(@y - @diffy - @z)
 
             @ys += @gravity
 
             @x += @xs
             @y += @ys
+            @z += @zs
 
             if (LIBRARY == "tmlib")
                 @sprite.alpha = @opacity
@@ -187,7 +191,7 @@ class _stationary
     #***************************************************************
     # スプライト同士の衝突判定(intersect)
     #***************************************************************
-    isIntersect:(motionObj, method = undefined)->
+    isIntersect:(motionObj)->
         if (LIBRARY == "tmlib")
             if (!motionObj.sprite?)
                 return false

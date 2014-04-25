@@ -77,7 +77,7 @@ tm.define "customLoadingScene",
 
         @bg = tm.display.Shape(param.width, param.height).addChildTo(this)
         @bg.canvas.clearColor "#000000"
-        @bg.setOrigin 0, 0
+        #@bg.setOrigin 0, 0
         label = tm.display.Label("loading")
         label.x = param.width / 2
         label.y = param.height / 2
@@ -145,6 +145,20 @@ tm.define "mainScene", {
         for obj in _objects
             if (obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
                 obj.motionObj.behavior()
+        _objects.sort (a, b)->
+            if (a.motionObj? && b.motionObj? && a.motionObj.sprite? && b.motionObj.sprite?)
+                a_num = a.motionObj.y + a.motionObj.z
+                b_num = b.motionObj.y + b.motionObj.z
+                if(a_num < b_num)
+                    return 1
+                else if (a_num > b_num)
+                    return -1
+                else
+                    return 0
+        for obj in _objects
+            if (obj.motionObj? && obj.motionObj.sprite?)
+                _scenes[obj.motionObj._scene].removeChild(obj.motionObj.sprite)
+                _scenes[obj.motionObj._scene].addChild(obj.motionObj.sprite)
 }
 
 #**********************************************************************
@@ -188,7 +202,7 @@ addObject = (param)->
             animtmp = animlist[animnum]
             motionsprite.frameIndex = animtmp[1][0]
             motionsprite.x = x
-            motionsprite.y = y
+            motionsprite.y = y - Math.floor(z)
             motionsprite.alpha = opacity
             motionsprite.rotation = 0.0
             motionsprite.scaleX = scaleX
@@ -210,10 +224,13 @@ addObject = (param)->
     initparam = []
     initparam['x'] = x
     initparam['y'] = y
+    initparam['z'] = z
     initparam['oldx'] = x
     initparam['oldy'] = y
+    initparam['oldz'] = z
     initparam['xs'] = xs
     initparam['ys'] = ys
+    initparam['zs'] = zs
     initparam['oldys'] = ys
     initparam['visible'] = visible
     initparam['scaleX'] = scaleX
@@ -228,6 +245,7 @@ addObject = (param)->
     initparam['animnum'] = animnum
     initparam['opacity'] = opacity
     initparam['motionsprite'] = motionsprite
+
     if (motionObj?)
         obj.motionObj = new motionObj(initparam)
     else
