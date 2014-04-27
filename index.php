@@ -21,7 +21,7 @@ if ($library != "enchant") {
         echo '<script type="text/javascript" src="sysobject/enforce.core.tmlib.js"></script>';
         echo '<script type="text/javascript">_setTmlib();</script>';
     } else if ($library == "enchant") {
-        echo '<script type="text/javascript" src="extlib/enchant.min.js"></script>';
+        echo '<script type="text/javascript" src="extlib/enchant.min.20140428mod.js"></script>';
         echo '<script type="text/javascript" src="sysobject/enforce.core.enchant.js"></script>';
         echo '<script type="text/javascript">_setEnchant();</script>';
     }
