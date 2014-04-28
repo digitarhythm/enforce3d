@@ -144,14 +144,16 @@ tm.define "mainScene", {
         LAPSEDTIME = parseFloat((core.frame / FPS).toFixed(2))
         for obj in _objects
             if (obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
+                if (obj.motionObj.sprite?)
+                    obj.motionObj.sprite.visible = false
                 obj.motionObj.behavior()
         _objects.sort (a, b)->
             if (a.motionObj? && b.motionObj? && a.motionObj.sprite? && b.motionObj.sprite?)
-                a_num = a.motionObj.y + a.motionObj.z
-                b_num = b.motionObj.y + b.motionObj.z
-                if(a_num < b_num)
+                a_z = a.motionObj.z
+                b_z = b.motionObj.z
+                if(a_z < b_z)
                     return 1
-                else if (a_num > b_num)
+                else if (a_z > b_z)
                     return -1
                 else
                     return 0
@@ -159,6 +161,7 @@ tm.define "mainScene", {
             if (obj.motionObj? && obj.motionObj.sprite?)
                 _scenes[obj.motionObj._scene].removeChild(obj.motionObj.sprite)
                 _scenes[obj.motionObj._scene].addChild(obj.motionObj.sprite)
+                obj.motionObj.sprite.visible = obj.motionObj.visible
 }
 
 #**********************************************************************
