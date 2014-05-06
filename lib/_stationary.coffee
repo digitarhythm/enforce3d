@@ -16,13 +16,13 @@ class _stationary
             @x = initparam['x']
             @y = initparam['y']
             @z = initparam['z']
-            @oldx = initparam['oldx']
-            @oldy = initparam['oldy']
-            @oldz = initparam['oldz']
+            @oldx = initparam['x']
+            @oldy = initparam['y']
+            @oldz = initparam['z']
             @xs = initparam['xs']
             @ys = initparam['ys']
             @zs = initparam['zs']
-            @oldys = initparam['oldys']
+            @oldys = initparam['ys']
             @visible = initparam['visible']
             @scaleX = initparam['scaleX']
             @scaleY = initparam['scaleY']
@@ -118,17 +118,17 @@ class _stationary
                         @sprite.frame = animpattern[@_dispframe]
                         @_animTime = LAPSEDTIME * 1000
                         @_dispframe++
-                    if (@_dispframe >= animpattern.length)
-                        if (@_endflag == true)
-                            @_endflag = false
-                            removeObject(@)
-                            return
-                        else if (@_returnflag == true)
-                            @_returnflag = false
-                            @animnum = @_beforeAnimnum
-                            @_dispframe = 0
-                        else
-                            @_dispframe = 0
+                        if (@_dispframe >= animpattern.length)
+                            if (@_endflag == true)
+                                @_endflag = false
+                                removeObject(@)
+                                return
+                            else if (@_returnflag == true)
+                                @_returnflag = false
+                                @animnum = @_beforeAnimnum
+                                @_dispframe = 0
+                            else
+                                @_dispframe = 0
 
         if (@_waittime > 0 && LAPSEDTIME > @_waittime)
             @_waittime = 0

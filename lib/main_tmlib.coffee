@@ -1,5 +1,5 @@
 #******************************************************************************
-# enforce game engine
+# enforce game engine(tmlib)
 #
 # 2014.04.04 ver2.0
 #
@@ -161,7 +161,7 @@ tm.define "mainScene", {
             if (obj.motionObj? && obj.motionObj.sprite?)
                 _scenes[obj.motionObj._scene].removeChild(obj.motionObj.sprite)
                 _scenes[obj.motionObj._scene].addChild(obj.motionObj.sprite)
-                obj.motionObj.sprite.visible = obj.motionObj.visible
+                #obj.motionObj.sprite.visible = obj.motionObj.visible
 }
 
 #**********************************************************************
@@ -228,13 +228,9 @@ addObject = (param)->
     initparam['x'] = x
     initparam['y'] = y
     initparam['z'] = z
-    initparam['oldx'] = x
-    initparam['oldy'] = y
-    initparam['oldz'] = z
     initparam['xs'] = xs
     initparam['ys'] = ys
     initparam['zs'] = zs
-    initparam['oldys'] = ys
     initparam['visible'] = visible
     initparam['scaleX'] = scaleX
     initparam['scaleY'] = scaleY

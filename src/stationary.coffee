@@ -33,7 +33,7 @@ class [__classname__] extends _stationary
     #    super(pos)
 
     #**************************
-    # detouch event
+    # detach event
     #**************************
     #touchesEnded:(pos)->
     #    super(pos)
