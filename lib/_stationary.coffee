@@ -101,6 +101,8 @@ class _stationary
             @sprite.visible = @visible
             @sprite.scaleX  = @scaleX
             @sprite.scaleY  = @scaleY
+            @sprite.width = @width
+            @sprite.height = @height
 
             if (@_type == SPRITE)
                 # 画面外に出たら自動的に消滅する

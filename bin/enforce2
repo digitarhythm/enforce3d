@@ -73,7 +73,7 @@ case ${opt} in
 new)
 	pkg=$2
     pkg2=$3
-	if [ -z "$pkg2" ]; then
+	if [ -z "$pkg" ]; then
 		echo "Please specify an option."
 		exit
 	fi

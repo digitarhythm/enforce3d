@@ -99,9 +99,11 @@ window.onload = ->
             LAPSEDTIME = parseFloat((core.frame / FPS).toFixed(2))
             for obj in _objects
                 if (obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
-                    if (obj.motionObj.sprite?)
-                        obj.motionObj.sprite.visible = false
                     obj.motionObj.behavior()
+                if (obj.motionObj? && obj.motionObj.sprite?)
+                    obj.motionObj.sprite.visible = false
+                    #_scenes[obj.motionObj._scene].removeChild(obj.motionObj.sprite)
+
             _objects.sort (a, b)->
                 if (a.motionObj? && b.motionObj? && a.motionObj.sprite? && b.motionObj.sprite?)
                     a_z = a.motionObj.z
@@ -114,8 +116,7 @@ window.onload = ->
                         return 0
             for obj in _objects
                 if (obj.motionObj? && obj.motionObj.sprite?)
-                    _scenes[obj.motionObj._scene].removeChild(obj.motionObj.sprite)
-                    _scenes[obj.motionObj._scene].addChild(obj.motionObj.sprite)
+                    #_scenes[obj.motionObj._scene].addChild(obj.motionObj.sprite)
                     obj.motionObj.sprite.visible = obj.motionObj.visible
     core.start()
 
@@ -283,6 +284,13 @@ getObject = (id)->
 #**********************************************************************
 #**********************************************************************
 #**********************************************************************
+
+#**********************************************************************
+# サウンド再生
+#**********************************************************************
+playSound = (name)->
+    soundfile = MEDIALIST[name]
+    sound = core.assets[soundfile].clone().play()
 
 #**********************************************************************
 # オブジェクトリストの中で未使用のものの配列番号を返す。
