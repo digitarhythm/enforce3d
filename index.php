@@ -12,7 +12,6 @@ $ini = parse_ini_file("lib/config.ini", true);
 <?php
     echo '<script type="text/javascript" src="extlib/enchant.0.8.0-enforce.js"></script>';
     echo '<script type="text/javascript" src="sysobject/enforce.core.enchant.js"></script>';
-    echo '<script type="text/javascript">_setEnchant();</script>';
 ?>
 <?php
     // #################################################################################
