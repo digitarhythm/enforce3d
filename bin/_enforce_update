@@ -12,5 +12,4 @@ fi
 
 cp -af $ENF/index.php $PROJ/
 cp -af $ENF/extlib/* $PROJ/extlib/
-coffee -b -j $PROJ/sysobject/enforce.core.tmlib.js -c $ENF/lib/_originObject.coffee $ENF/lib/_stationary.coffee $ENF/lib/library.coffee $ENF/lib/main_tmlib.coffee
-coffee -b -j $PROJ/sysobject/enforce.core.enchant.js -c $ENF/lib/_originObject.coffee $ENF/lib/_stationary.coffee $ENF/lib/library.coffee $ENF/lib/main_enchant.coffee
+coffee -b -j $PROJ/sysobject/enforce.core.enchant.js -c $ENF/lib/_originObject.coffee $ENF/lib/_stationary.coffee $ENF/lib/library.coffee $ENF/lib/main.coffee

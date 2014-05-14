@@ -32,6 +32,5 @@ echo '2.0' > $PROJ/lib/version
 cp -af $ENF/src/sample.coffee $PROJ/src/
 
 # ライブラリをコンパイル
-coffee -b -j $PROJ/sysobject/enforce.core.tmlib.js -c $ENF/lib/_originObject.coffee $ENF/lib/_stationary.coffee $ENF/lib/library.coffee $ENF/lib/main_tmlib.coffee
-coffee -b -j $PROJ/sysobject/enforce.core.enchant.js -c $ENF/lib/_originObject.coffee $ENF/lib/_stationary.coffee $ENF/lib/library.coffee $ENF/lib/main_enchant.coffee
+coffee -b -j $PROJ/sysobject/enforce.core.enchant.js -c $ENF/lib/_originObject.coffee $ENF/lib/_stationary.coffee $ENF/lib/library.coffee $ENF/lib/main.coffee
 coffee -b -o $PROJ/usrobject -c $PROJ/src/*.coffee
