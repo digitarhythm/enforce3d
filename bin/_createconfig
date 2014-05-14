@@ -5,10 +5,8 @@ if ($argc < 2) {
 }
 $WEBGL = "false";
 $DEBUG = "true";
-$LIBRARY = ($argv[1] == "enchant" ? "enchant" : "tmlib");
 
 echo "[ENVIRON]\n";
 echo "webgl=$WEBGL\n";
 echo "debug=$DEBUG\n";
-echo "library=$LIBRARY\n";
 ?>

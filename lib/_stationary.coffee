@@ -36,40 +36,22 @@ class _stationary
             @animnum = initparam['animnum']
             @opacity = initparam['opacity']
 
-            if (LIBRARY == "enchant")
-                @sprite.ontouchstart = (e)=>
-                    pos = {x:e.x, y:e.y}
-                    if (typeof @touchesBegan == 'function')
-                        @touchesBegan(pos)
-                @sprite.ontouchmove = (e)=>
-                    pos = {x:e.x, y:e.y}
-                    if (typeof @touchesMoved == 'function')
-                        @touchesMoved(pos)
-                @sprite.ontouchend = (e)=>
-                    pos = {x:e.x, y:e.y}
-                    if (typeof @touchesEnded == 'function')
-                        @touchesEnded(pos)
-                @sprite.ontouchcancel = (e)=>
-                    pos = {x:e.x, y:e.y}
-                    if (typeof @touchesCanceled == 'function')
-                        @touchesCanceled(pos)
-            else if (LIBRARY == "tmlib")
-                @sprite.onpointingstart = (e)=>
-                    pos = {x:e.pointing.position.x, y:e.pointing.position.y}
-                    if (typeof @touchesBegan == 'function')
-                        @touchesBegan(pos)
-                @sprite.onpointingmove = (e)=>
-                    pos = {x:e.pointing.position.x, y:e.pointing.position.y}
-                    if (typeof @touchesMoved == 'function')
-                        @touchesMoved(pos)
-                @sprite.onpointingend = (e)=>
-                    pos = {x:e.pointing.position.x, y:e.pointing.position.y}
-                    if (typeof @touchesEnded == 'function')
-                        @touchesEnded(pos)
-                @sprite.onpointingcancel = (e)=>
-                    pos = {x:e.pointing.position.x, y:e.pointing.position.y}
-                    if (typeof @touchesCanceled == 'function')
-                        @touchesCanceled(pos)
+            @sprite.ontouchstart = (e)=>
+                pos = {x:e.x, y:e.y}
+                if (typeof @touchesBegan == 'function')
+                    @touchesBegan(pos)
+            @sprite.ontouchmove = (e)=>
+                pos = {x:e.x, y:e.y}
+                if (typeof @touchesMoved == 'function')
+                    @touchesMoved(pos)
+            @sprite.ontouchend = (e)=>
+                pos = {x:e.x, y:e.y}
+                if (typeof @touchesEnded == 'function')
+                    @touchesEnded(pos)
+            @sprite.ontouchcancel = (e)=>
+                pos = {x:e.x, y:e.y}
+                if (typeof @touchesCanceled == 'function')
+                    @touchesCanceled(pos)
 
             @intersectFlag = true
 
@@ -93,10 +75,7 @@ class _stationary
             @y += @ys
             @z += @zs
 
-            if (LIBRARY == "tmlib")
-                @sprite.alpha = @opacity
-            else if (LIBRARY == "enchant")
-                @sprite.opacity = @opacity
+            @sprite.opacity = @opacity
 
             @sprite.visible = @visible
             @sprite.scaleX  = @scaleX
@@ -194,20 +173,12 @@ class _stationary
     # スプライト同士の衝突判定(intersect)
     #***************************************************************
     isIntersect:(motionObj)->
-        if (LIBRARY == "tmlib")
-            if (!motionObj.sprite?)
-                return false
-            if (@intersectFlag == true && motionObj.intersectFlag == true)
-                ret = @sprite.isHitElement(motionObj.sprite)
-            else
-                ret = false
-        else if (LIBRARY == "enchant")
-            if (!motionObj.sprite?)
-                return false
-            if (@intersectFlag == true && motionObj.intersectFlag == true)
-                ret = @sprite.intersect(motionObj.sprite)
-            else
-                ret = false
+        if (!motionObj.sprite?)
+            return false
+        if (@intersectFlag == true && motionObj.intersectFlag == true)
+            ret = @sprite.intersect(motionObj.sprite)
+        else
+            ret = false
         return ret
 
     #***************************************************************
@@ -244,10 +215,7 @@ class _stationary
     # スプライトを回転させる
     #***************************************************************
     spriteRotation:(rad)->
-        if (LIBRARY == "tmlib")
-            @sprite.rotation += rad
-        else
-            @sprite.rotate(rad)
+        @sprite.rotate(rad)
 
 #*******************************************************************
 # TimeLine 制御（現在はenchantのみ）
@@ -257,39 +225,25 @@ class _stationary
     # スプライトをfadeInさせる（現在はenchantのみ）
     #***************************************************************
     fadeIn:(time)->
-        if (LIBRARY == "enchant")
-            @sprite.tl.fadeIn(time)
-        else if (LIBRARY == "tmlib")
-            @sprite.timeline
-                .to(0, {
-                    alpha: 1.0
-                }, time)
+        @sprite.tl.fadeIn(time)
         return @
 
     #***************************************************************
     # スプライトをフェイドアウトする（現在はenchantのみ）
     #***************************************************************
     fadeOut:(time)->
-        if (LIBRARY == "enchant")
-            @sprite.tl.fadeOut(time)
-        else if (LIBRARY == "tmlib")
-            @sprite.timeline
-                .to(0, {
-                    alpha: 0.0
-                }, time)
+        @sprite.tl.fadeOut(time)
         return @
 
     #***************************************************************
     # タイムラインをループさせる（現在はenchantのみ）
     #***************************************************************
     loop:->
-        if (LIBRARY == "enchant")
-            @sprite.tl.loop()
+        @sprite.tl.loop()
 
     #***************************************************************
     # ライムラインをクリアする（現在はenchantのみ）
     #***************************************************************
     clear:->
-        if (LIBRARY == "enchant")
-            @sprite.tl.clear()
+        @sprite.tl.clear()
 

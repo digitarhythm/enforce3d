@@ -1,11 +1,5 @@
 <?php
 $ini = parse_ini_file("lib/config.ini", true);
-$library = $ini['ENVIRON']['library'];
-if ($library != "enchant") {
-    $library = "tmlib";
-} else {
-    $library = "enchant";
-}
 ?>
 <!DOCTYPE html>
 <html>
