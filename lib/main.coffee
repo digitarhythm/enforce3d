@@ -108,24 +108,10 @@ window.onload = ->
         rootScene.addChild(scene)
 
     # Three.jsのレンダラー初期化
-<<<<<<< HEAD
     RENDERER = new THREE.WebGLRenderer({ antialias:true })
     RENDERER.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
     RENDERER.setClearColorHex(0x000000, 1)
     document.body.appendChild(RENDERER.domElement)
-=======
-    debugnum = 0
-    renderer = new THREE.WebGLRenderer({ antialias:true })
-    ###
-    JSLog(debugnum++)
-    renderer.setSize(500, 500)
-    JSLog(debugnum++)
-    renderer.setClearColorHex(0x000000, 1)
-    JSLog(debugnum++)
-    document.body.appendChild(renderer.domElement)
-    JSLog(debugnum++)
-
->>>>>>> 6c6d50f4c5234923f966513a8905568e952b1ff2
     # シーン生成
     glscene = new THREE.Scene()
     _scenes[WEBGLSCENE] = glscene
