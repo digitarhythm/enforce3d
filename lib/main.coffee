@@ -107,7 +107,6 @@ window.onload = ->
         rootScene.addChild(scene)
 
     # Three.jsのレンダラー初期化
-    JSLog('レンダラー初期化')
     debugnum = 0
     renderer = new THREE.WebGLRenderer({ antialias:true })
     ###
