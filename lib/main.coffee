@@ -42,6 +42,7 @@ MOTION_ROTATE       = [alpha:0, beta:0, gamma:0]
 LAPSEDTIME          = 0
 
 # 3D系
+RENDERER            = undefined
 CAMERA              = undefined
 LIGHT               = undefined
 
@@ -82,7 +83,7 @@ enchant.ENV.MOUSE_ENABLED = false
 window.onload = ->
     # enchant初期化
     core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT)
-    core.rootScene.backgroundColor = BGCOLOR
+    #core.rootScene.backgroundColor = BGCOLOR
     core.fps = FPS
     if (MEDIALIST?)
         imagearr = []
@@ -107,41 +108,33 @@ window.onload = ->
         rootScene.addChild(scene)
 
     # Three.jsのレンダラー初期化
-    JSLog('レンダラー初期化')
-    debugnum = 0
-    renderer = new THREE.WebGLRenderer({ antialias:true })
-    ###
-    JSLog(debugnum++)
-    renderer.setSize(500, 500)
-    JSLog(debugnum++)
-    renderer.setClearColorHex(0x000000, 1)
-    JSLog(debugnum++)
-    document.body.appendChild(renderer.domElement)
-    JSLog(debugnum++)
-
+    RENDERER = new THREE.WebGLRenderer({ antialias:true })
+    RENDERER.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
+    RENDERER.setClearColorHex(0x000000, 1)
+    document.body.appendChild(RENDERER.domElement)
     # シーン生成
-    JSLog('シーン生成')
     glscene = new THREE.Scene()
     _scenes[WEBGLSCENE] = glscene
     # デフォルトカメラ生成
-    CAMERA = new THREE.PerspectiveCamera(15, 500 / 500)
-    CAMERA.position = new THREE.Vector3(0, 0, 8)
+    CAMERA = new THREE.PerspectiveCamera(24, SCREEN_WIDTH / SCREEN_HEIGHT)
+    CAMERA.position = new THREE.Vector3(0, 100, 100)
     CAMERA.lookAt(new THREE.Vector3(0, 0, 0))
     glscene.add(CAMERA)
     # デフォルトライト生成
-    LIGHT = new THREE.DirectionalLight(0xcccccc)
+    LIGHT = new THREE.DirectionalLight(0xffffff)
     LIGHT.position = new THREE.Vector3(0.577, 0.577, 0.577)
     glscene.add(LIGHT)
-    renderer.render(_scenes[WEBGLSCENE], CAMERA)
-    ###
 
     core.onload = ->
         for i in [0...OBJECTNUM]
             _objects[i] = new _originObject()
         _main = new enforceMain()
         rootScene.addEventListener 'enterframe', (e)->
+            RENDERER.render(_scenes[WEBGLSCENE], CAMERA)
             LAPSEDTIME = parseFloat((core.frame / FPS).toFixed(2))
             for obj in _objects
+                if (obj._type == WEBGL)
+                    continue
                 if (obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
                     obj.motionObj.behavior()
                 if (obj.motionObj? && obj.motionObj.sprite?)
@@ -159,6 +152,8 @@ window.onload = ->
                     else
                         return 0
             for obj in _objects
+                if (obj._type == WEBGL)
+                    continue
                 if (obj.motionObj? && obj.motionObj.sprite?)
                     #_scenes[obj.motionObj._scene].addChild(obj.motionObj.sprite)
                     obj.motionObj.sprite.visible = obj.motionObj.visible
@@ -198,13 +193,6 @@ addObject = (param)->
     if (motionObj == null)
         motionObj = undefined
 
-    objnum = _getNullObject()
-    if (objnum < 0)
-        return undefined
-
-    obj = _objects[objnum]
-    obj.active = true
-
     # スプライトを生成
     switch (_type)
         when CONTROL, SPRITE
@@ -213,25 +201,6 @@ addObject = (param)->
                 scene = GAMESCENE_SUB1
             # TimeLineを時間ベースにする
             motionsprite.tl.setTimeBased()
-
-        when WEBGL
-            scene = WEBGLSCENE
-            if (MEDIALIST[image]?)
-                loader = new THREE.ColladaLoader()
-                loader.options.convertUpAxis = true
-                loader.load MEDIALIST[image], (collada)=>
-                    motionsprite = collada.scene
-                    motionsprite.position.set(x, y, z)
-                    motionsprite.scale.set(scaleX, scaleY, scaleZ)
-                    _scenes[WEBGLSCENE].add(motionsprite)
-        else
-            motionsprite = undefined
-            if (scene < 0)
-                scene = GAMESCENE_SUB1
-
-    # スプライト設定
-    switch (_type)
-        when SPRITE
             animtmp = animlist[animnum]
             motionsprite.frame = animtmp[1][0]
             motionsprite.backgroundColor = "transparent"
@@ -244,16 +213,36 @@ addObject = (param)->
             motionsprite.visible = visible
             motionsprite.width = width
             motionsprite.height = height
+            # 画像割り当て
+            if (MEDIALIST[image]? && animlist?)
+                img = MEDIALIST[image]
+                motionsprite.image = core.assets[img]
+            # スプライトを表示
+            if (_type != WEBGL)
+                _scenes[scene].addChild(motionsprite)
+            # 動きを定義したオブジェクトを生成する
+            retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, width, height, animlist, animnum, opacity, scene, _type, motionsprite, motionObj)
 
-    # 画像割り当て
-    if (MEDIALIST[image]? && animlist?)
-        img = MEDIALIST[image]
-        motionsprite.image = core.assets[img]
+        when WEBGL
+            if (MEDIALIST[image]?)
+                loader = new THREE.ColladaLoader()
+                loader.options.convertUpAxis = true
+                motionsprite = undefined
+                loader.load MEDIALIST[image], (collada)=>
+                    motionsprite = collada.scene
+                    motionsprite.position.set(x, y, z)
+                    motionsprite.scale.set(scaleX, scaleY, scaleZ)
+                    _scenes[WEBGLSCENE].add(motionsprite)
+                    # 動きを定義したオブジェクトを生成する
+                    retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, width, height, animlist, animnum, opacity, motionsprite)
+        else
+            motionsprite = undefined
+            if (scene < 0)
+                scene = GAMESCENE_SUB1
 
-    # スプライトを表示
-    if (_type != WEBGL)
-        _scenes[scene].addChild(motionsprite)
+    return retObject
 
+setMotionObj = (x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, width, height, animlist, animnum, opacity, scene, _type, motionsprite, motionObj)->
     # 動きを定義したオブジェクトを生成する
     initparam = []
     initparam['x'] = x
@@ -279,6 +268,14 @@ addObject = (param)->
     initparam['animnum'] = animnum
     initparam['opacity'] = opacity
     initparam['motionsprite'] = motionsprite
+
+    objnum = _getNullObject()
+    if (objnum < 0)
+        return undefined
+
+    obj = _objects[objnum]
+    obj.active = true
+
     if (motionObj?)
         obj.motionObj = new motionObj(initparam)
     else
@@ -359,4 +356,3 @@ _getNullObject = ->
             ret = i
             break
     return ret
-
