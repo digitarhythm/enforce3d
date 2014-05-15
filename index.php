@@ -12,7 +12,7 @@ $ini = parse_ini_file("lib/config.ini", true);
     <script type="text/javascript" src="extlib/three.min.js"></script>
     <script type="text/javascript" src="extlib/ColladaLoader.js"></script>
     <script type="text/javascript" src="extlib/enchant.0.8.0-enforce.js"></script>
-    <script type="text/javascript" src="sysobject/enforce.core.enchant.js"></script>
+    <script type="text/javascript" src="sysobject/enforce.js"></script>
 <?php
     // #################################################################################
     // ライブラリー読み込み

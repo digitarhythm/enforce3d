@@ -77,6 +77,7 @@ rootScene           = null
 enchant()
 enchant.Sound.enabledInMobileSafari = true
 enchant.ENV.MOUSE_ENABLED = false
+
 # ゲーム起動時の処理
 window.onload = ->
     # enchant初期化
@@ -106,11 +107,20 @@ window.onload = ->
         rootScene.addChild(scene)
 
     # Three.jsのレンダラー初期化
+    JSLog('レンダラー初期化')
+    debugnum = 0
     renderer = new THREE.WebGLRenderer({ antialias:true })
+    JSLog(debugnum++)
     renderer.setSize(500, 500)
+    JSLog(debugnum++)
     renderer.setClearColorHex(0x000000, 1)
+    JSLog(debugnum++)
     document.body.appendChild(renderer.domElement)
+    JSLog(debugnum++)
+
+    ###
     # シーン生成
+    JSLog('シーン生成')
     glscene = new THREE.Scene()
     _scenes[WEBGLSCENE] = glscene
     # デフォルトカメラ生成
@@ -123,6 +133,7 @@ window.onload = ->
     LIGHT.position = new THREE.Vector3(0.577, 0.577, 0.577)
     glscene.add(LIGHT)
     renderer.render(_scenes[WEBGLSCENE], CAMERA)
+    ###
 
     core.onload = ->
         for i in [0...OBJECTNUM]
