@@ -19,6 +19,8 @@ DSPRITE_BOX         = 2
 DSPRITE_CIRCLE      = 3
 SSPRITE_BOX         = 4
 SSPRITE_CIRCLE      = 5
+WEBGL               = 6
+
 # Sceneの種類
 BGSCENE             = 0
 BGSCENE_SUB1        = 1
@@ -27,6 +29,7 @@ GAMESCENE           = 3
 GAMESCENE_SUB1      = 4
 GAMESCENE_SUB2      = 5
 TOPSCENE            = 6
+WEBGLSCENE          = 7
 
 # グローバル初期化
 
@@ -34,24 +37,35 @@ TOPSCENE            = 6
 MOTION_ACCEL        = [x:0, y:0, z:0]
 MOTION_GRAVITY      = [x:0, y:0, z:0]
 MOTION_ROTATE       = [alpha:0, beta:0, gamma:0]
+
 # ゲーム起動時からの経過時間（秒）
 LAPSEDTIME          = 0
+
 # 3D系
 CAMERA              = undefined
+LIGHT               = undefined
+
 # オブジェクトが入っている配列
 _objects            = []
+
 # Scene格納用配列
 _scenes             = []
+
 # 起動時に生成されるスタートオブジェクト
 _main               = null
+
 # デバッグ用LABEL
 _DEBUGLABEL         = null
+
 # enchantのcoreオブジェクト
 core                = null
+
 # box2dのworldオブジェクト
 box2dworld          = null
+
 # 3Dのscene
 rootScene3D         = null
+
 # enchantのrootScene
 rootScene           = null
 
@@ -85,11 +99,30 @@ window.onload = ->
         MOTION_ROTATE.gamma = e.gamma
 
     # シーングループを生成
-    for i in [0...(TOPSCENE+1)]
+    for i in [0..TOPSCENE]
         scene = new Group()
         scene.backgroundColor = "black"
         _scenes[i] = scene
         rootScene.addChild(scene)
+
+    # Three.jsのレンダラー初期化
+    renderer = new THREE.WebGLRenderer({ antialias:true })
+    renderer.setSize(500, 500)
+    renderer.setClearColorHex(0x000000, 1)
+    document.body.appendChild(renderer.domElement)
+    # シーン生成
+    glscene = new THREE.Scene()
+    _scenes[WEBGLSCENE] = glscene
+    # デフォルトカメラ生成
+    CAMERA = new THREE.PerspectiveCamera(15, 500 / 500)
+    CAMERA.position = new THREE.Vector3(0, 0, 8)
+    CAMERA.lookAt(new THREE.Vector3(0, 0, 0))
+    glscene.add(CAMERA)
+    # デフォルトライト生成
+    LIGHT = new THREE.DirectionalLight(0xcccccc)
+    LIGHT.position = new THREE.Vector3(0.577, 0.577, 0.577)
+    glscene.add(LIGHT)
+    renderer.render(_scenes[WEBGLSCENE], CAMERA)
 
     core.onload = ->
         for i in [0...OBJECTNUM]
@@ -149,6 +182,7 @@ addObject = (param)->
     move = if (param.move?) then param.move else false
     scaleX = if (param.scaleX?) then param.scaleX else 1.0
     scaleY = if (param.scaleY?) then param.scaleY else 1.0
+    scaleZ = if (param.scaleZ?) then param.scaleZ else 1.0
 
     if (motionObj == null)
         motionObj = undefined
@@ -166,15 +200,25 @@ addObject = (param)->
             motionsprite = new Sprite()
             if (scene < 0)
                 scene = GAMESCENE_SUB1
+            # TimeLineを時間ベースにする
+            motionsprite.tl.setTimeBased()
+
+        when WEBGL
+            scene = WEBGLSCENE
+            if (MEDIALIST[image]?)
+                loader = new THREE.ColladaLoader()
+                loader.options.convertUpAxis = true
+                loader.load MEDIALIST[image], (collada)=>
+                    motionsprite = collada.scene
+                    motionsprite.position.set(x, y, z)
+                    motionsprite.scale.set(scaleX, scaleY, scaleZ)
+                    _scenes[WEBGLSCENE].add(motionsprite)
         else
             motionsprite = undefined
             if (scene < 0)
                 scene = GAMESCENE_SUB1
 
-    # TimeLineを時間ベースにする
-    motionsprite.tl.setTimeBased()
-
-    # スプライト生成
+    # スプライト設定
     switch (_type)
         when SPRITE
             animtmp = animlist[animnum]
@@ -196,7 +240,8 @@ addObject = (param)->
         motionsprite.image = core.assets[img]
 
     # スプライトを表示
-    _scenes[scene].addChild(motionsprite)
+    if (_type != WEBGL)
+        _scenes[scene].addChild(motionsprite)
 
     # 動きを定義したオブジェクトを生成する
     initparam = []

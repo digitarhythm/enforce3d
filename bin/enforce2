@@ -7,6 +7,22 @@ ENF=$(cd $(dirname $0)/..;pwd)
 cwd=$(cd $(dirname $0);pwd)
 
 ##################################################
+# process codejs
+##################################################
+
+if [ -z "$opt" ]; then
+	echo "<Usage>"
+	echo "enforce2 function [option]"
+	echo "<function>"
+	echo "new    : create new project(require option is package name)"
+	echo "update : update system library"
+	echo "derive : create a new object class(require option is new class name)"
+	echo "static : project to static mode"
+	echo "static : project to develop mode"
+	exit
+fi
+
+##################################################
 # enforce version check
 ##################################################
 if [ "$opt" != "new" ]; then
@@ -50,22 +66,6 @@ fi
 which coffee > /dev/null 2>&1
 if [ $? -ne 0 ]; then
 	echo "coffee-script is not found."
-	exit
-fi
-
-##################################################
-# process codejs
-##################################################
-
-if [ -z "$opt" ]; then
-	echo "<Usage>"
-	echo "enforce2 function [option]"
-	echo "<function>"
-	echo "new    : create new project(require option is package name)"
-	echo "update : update system library"
-	echo "derive : create a new object class(require option is new class name)"
-	echo "static : project to static mode"
-	echo "static : project to develop mode"
 	exit
 fi
 
