@@ -110,6 +110,7 @@ window.onload = ->
     JSLog('レンダラー初期化')
     debugnum = 0
     renderer = new THREE.WebGLRenderer({ antialias:true })
+    ###
     JSLog(debugnum++)
     renderer.setSize(500, 500)
     JSLog(debugnum++)
@@ -118,7 +119,6 @@ window.onload = ->
     document.body.appendChild(renderer.domElement)
     JSLog(debugnum++)
 
-    ###
     # シーン生成
     JSLog('シーン生成')
     glscene = new THREE.Scene()
