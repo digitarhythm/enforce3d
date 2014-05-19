@@ -83,7 +83,7 @@ enchant.ENV.MOUSE_ENABLED = false
 window.onload = ->
     # enchant初期化
     core = new Core(SCREEN_WIDTH, SCREEN_HEIGHT)
-    #core.rootScene.backgroundColor = BGCOLOR
+    core.rootScene.backgroundColor = BGCOLOR
     core.fps = FPS
     if (MEDIALIST?)
         imagearr = []
@@ -107,11 +107,23 @@ window.onload = ->
         _scenes[i] = scene
         rootScene.addChild(scene)
 
+    ###
     # Three.jsのレンダラー初期化
     RENDERER = new THREE.WebGLRenderer({ antialias:true })
     RENDERER.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
-    RENDERER.setClearColorHex(0x000000, 1)
-    document.body.appendChild(RENDERER.domElement)
+    RENDERER.setClearColorHex(0x000000, 0.0)
+    document.getElementById('webgl').appendChild(RENDERER.domElement)
+    scale = Math.min(
+        innerWidth / SCREEN_WIDTH
+        innerHeight / SCREEN_HEIGHT
+    )
+    scrwidth = Math.floor(SCREEN_WIDTH * scale)
+    scrheight = Math.floor(SCREEN_HEIGHT * scale)
+    left = Math.floor((window.innerWidth - scrwidth) / 2)
+    top = Math.floor((window.innerHeight - scrheight) / 2)
+    webglelm = document.querySelector('#webgl')
+    webglelm.style.webkitTransformOrigin = left+"px "+top+"px"
+    webglelm.style.webkitTransform = "scale("+scale+", "+scale+") translate("+left+"px, "+top+"px)"
     # シーン生成
     glscene = new THREE.Scene()
     _scenes[WEBGLSCENE] = glscene
@@ -124,13 +136,14 @@ window.onload = ->
     LIGHT = new THREE.DirectionalLight(0xffffff)
     LIGHT.position = new THREE.Vector3(0.577, 0.577, 0.577)
     glscene.add(LIGHT)
+    ###
 
     core.onload = ->
         for i in [0...OBJECTNUM]
             _objects[i] = new _originObject()
         _main = new enforceMain()
         rootScene.addEventListener 'enterframe', (e)->
-            RENDERER.render(_scenes[WEBGLSCENE], CAMERA)
+            #RENDERER.render(_scenes[WEBGLSCENE], CAMERA)
             LAPSEDTIME = parseFloat((core.frame / FPS).toFixed(2))
             for obj in _objects
                 if (obj._type == WEBGL)
@@ -201,25 +214,31 @@ addObject = (param)->
                 scene = GAMESCENE_SUB1
             # TimeLineを時間ベースにする
             motionsprite.tl.setTimeBased()
-            animtmp = animlist[animnum]
-            motionsprite.frame = animtmp[1][0]
-            motionsprite.backgroundColor = "transparent"
-            motionsprite.x = x - Math.floor(width / 2)
-            motionsprite.y = y - Math.floor(height / 2) - Math.floor(z)
-            motionsprite.opacity = opacity
-            motionsprite.rotation = 0.0
-            motionsprite.scaleX = scaleX
-            motionsprite.scaleY = scaleY
-            motionsprite.visible = visible
-            motionsprite.width = width
-            motionsprite.height = height
-            # 画像割り当て
-            if (MEDIALIST[image]? && animlist?)
-                img = MEDIALIST[image]
-                motionsprite.image = core.assets[img]
-            # スプライトを表示
-            if (_type != WEBGL)
-                _scenes[scene].addChild(motionsprite)
+
+            if (animlist?)
+                animtmp = animlist[animnum]
+                motionsprite.frame = animtmp[1][0]
+
+                motionsprite.backgroundColor = "transparent"
+                motionsprite.x = x - Math.floor(width / 2)
+                motionsprite.y = y - Math.floor(height / 2) - Math.floor(z)
+                motionsprite.opacity = opacity
+                motionsprite.rotation = 0.0
+                motionsprite.scaleX = scaleX
+                motionsprite.scaleY = scaleY
+                motionsprite.visible = visible
+                motionsprite.width = width
+                motionsprite.height = height
+
+                # 画像割り当て
+                if (MEDIALIST[image]? && animlist?)
+                    img = MEDIALIST[image]
+                    motionsprite.image = core.assets[img]
+
+                # スプライトを表示
+                if (_type != WEBGL)
+                    _scenes[scene].addChild(motionsprite)
+
             # 動きを定義したオブジェクトを生成する
             retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, width, height, animlist, animnum, opacity, scene, _type, motionsprite, motionObj)
 
@@ -234,7 +253,7 @@ addObject = (param)->
                     motionsprite.scale.set(scaleX, scaleY, scaleZ)
                     _scenes[WEBGLSCENE].add(motionsprite)
                     # 動きを定義したオブジェクトを生成する
-                    retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, width, height, animlist, animnum, opacity, motionsprite)
+                    retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, width, height, animlist, animnum, opacity, scene, _type, motionsprite, motionObj)
         else
             motionsprite = undefined
             if (scene < 0)
@@ -258,6 +277,7 @@ setMotionObj = (x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, w
     initparam['visible'] = visible
     initparam['scaleX'] = scaleX
     initparam['scaleY'] = scaleY
+    initparam['scaleZ'] = scaleZ
     initparam['gravity'] = gravity
     initparam['intersectFlag'] = true
     initparam['width'] = width
@@ -343,7 +363,9 @@ getObject = (id)->
 #**********************************************************************
 playSound = (name)->
     soundfile = MEDIALIST[name]
-    sound = core.assets[soundfile].clone().play()
+    soundassets = core.assets[soundfile].clone()
+    soundassets.play()
+    return soundassets
 
 #**********************************************************************
 # オブジェクトリストの中で未使用のものの配列番号を返す。

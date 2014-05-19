@@ -26,6 +26,7 @@ class _stationary
             @visible = initparam['visible']
             @scaleX = initparam['scaleX']
             @scaleY = initparam['scaleY']
+            @scaleZ = initparam['scaleZ']
             @gravity = initparam['gravity']
             @intersectFlag = initparam['intersectFlag']
             @width = initparam['width']
@@ -65,51 +66,61 @@ class _stationary
     #***************************************************************
     behavior:->
         # スプライトの座標等パラメータを更新する
-        if (@_type == SPRITE && @sprite?)
-            @sprite.x = Math.floor(@x - @diffx)
-            @sprite.y = Math.floor(@y - @diffy - @z)
+        if (@sprite?)
+            switch (@_type)
+                when SPRITE
+                    @sprite.x = Math.floor(@x - @diffx)
+                    @sprite.y = Math.floor(@y - @diffy - @z)
 
-            @ys += @gravity
+                    @ys += @gravity
 
-            @x += @xs
-            @y += @ys
-            @z += @zs
+                    @x += @xs
+                    @y += @ys
+                    @z += @zs
 
-            @sprite.opacity = @opacity
+                    @sprite.opacity = @opacity
 
-            @sprite.visible = @visible
-            @sprite.scaleX  = @scaleX
-            @sprite.scaleY  = @scaleY
-            @sprite.width = @width
-            @sprite.height = @height
+                    @sprite.visible = @visible
+                    @sprite.scaleX  = @scaleX
+                    @sprite.scaleY  = @scaleY
+                    @sprite.width = @width
+                    @sprite.height = @height
 
-            if (@_type == SPRITE)
-                # 画面外に出たら自動的に消滅する
-                if (@sprite.x < -@sprite.width || @sprite.x > SCREEN_WIDTH || @sprite.y < -@sprite.height || @sprite.y > SCREEN_HEIGHT || @_autoRemove == true)
-                    if (typeof(@autoRemove) == 'function')
-                        @autoRemove()
-                        removeObject(@)
-
-                if (@animlist?)
-                    animtmp = @animlist[@animnum]
-                    animtime = animtmp[0]
-                    animpattern = animtmp[1]
-                    if (LAPSEDTIME * 1000 > @_animTime + animtime)
-                        @sprite.frameIndex = animpattern[@_dispframe]
-                        @sprite.frame = animpattern[@_dispframe]
-                        @_animTime = LAPSEDTIME * 1000
-                        @_dispframe++
-                        if (@_dispframe >= animpattern.length)
-                            if (@_endflag == true)
-                                @_endflag = false
+                    if (@_type == SPRITE)
+                        # 画面外に出たら自動的に消滅する
+                        if (@sprite.x < -@sprite.width || @sprite.x > SCREEN_WIDTH || @sprite.y < -@sprite.height || @sprite.y > SCREEN_HEIGHT || @_autoRemove == true)
+                            if (typeof(@autoRemove) == 'function')
+                                @autoRemove()
                                 removeObject(@)
-                                return
-                            else if (@_returnflag == true)
-                                @_returnflag = false
-                                @animnum = @_beforeAnimnum
-                                @_dispframe = 0
-                            else
-                                @_dispframe = 0
+
+                        if (@animlist?)
+                            animtmp = @animlist[@animnum]
+                            animtime = animtmp[0]
+                            animpattern = animtmp[1]
+                            if (LAPSEDTIME * 1000 > @_animTime + animtime)
+                                @sprite.frameIndex = animpattern[@_dispframe]
+                                @sprite.frame = animpattern[@_dispframe]
+                                @_animTime = LAPSEDTIME * 1000
+                                @_dispframe++
+                                if (@_dispframe >= animpattern.length)
+                                    if (@_endflag == true)
+                                        @_endflag = false
+                                        removeObject(@)
+                                        return
+                                    else if (@_returnflag == true)
+                                        @_returnflag = false
+                                        @animnum = @_beforeAnimnum
+                                        @_dispframe = 0
+                                    else
+                                        @_dispframe = 0
+
+                when WEBGL
+                    @sprite.position.set(@x, @y, @z)
+                    @sprite.scale.set(@scaleX, @scaleY, @scaleZ)
+                    @ys += @gravity
+                    @x += @xs
+                    @y += @ys
+                    @z += @zs
 
         if (@_waittime > 0 && LAPSEDTIME > @_waittime)
             @_waittime = 0

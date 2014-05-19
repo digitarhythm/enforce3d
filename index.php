@@ -9,8 +9,8 @@ $ini = parse_ini_file("lib/config.ini", true);
     <meta name="viewport" content="width=device-width, user-scalable=no, minimal-ui">
     <meta name="apple-mobile-web-app-capable" content="yes">
 	<script type="text/javascript" src="usrobject/environ.js"></script>
-    <script type="text/javascript" src="extlib/three.min.js"></script>
-    <script type="text/javascript" src="extlib/ColladaLoader.js"></script>
+    <!--script type="text/javascript" src="extlib/three.min.js"></script>
+    <script type="text/javascript" src="extlib/ColladaLoader.js"></script-->
     <script type="text/javascript" src="extlib/enchant.0.8.0-enforce.js"></script>
     <script type="text/javascript" src="sysobject/enforce.core.js"></script>
 <?php
@@ -45,6 +45,7 @@ $ini = parse_ini_file("lib/config.ini", true);
         }
     </style>
 </head>
-<body bgcolor="black">
+<body bgcolor="gray">
+    <div id="webgl"></div>
 </body>
 </html>
