@@ -212,6 +212,7 @@ addObject = (param)->
             motionsprite = new Sprite()
             if (scene < 0)
                 scene = GAMESCENE_SUB1
+
             # TimeLineを時間ベースにする
             motionsprite.tl.setTimeBased()
 

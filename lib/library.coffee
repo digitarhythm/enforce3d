@@ -40,5 +40,13 @@ getKeyDirection =->
         dir['x'] = -1
     return dir
 
+# set cookie value
+setCookie = (name, value, expireValue = 1)->
+    $.cookie(name, value, { expires: expireValue })
+
+# get cookie value
+getCookie = (name)->
+    return $.cookie(name)
+
 # do noting
 nop =->
