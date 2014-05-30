@@ -38,6 +38,14 @@ MOTION_ACCEL        = [x:0, y:0, z:0]
 MOTION_GRAVITY      = [x:0, y:0, z:0]
 MOTION_ROTATE       = [alpha:0, beta:0, gamma:0]
 
+# User Agent
+_useragent = window.navigator.userAgent.toLowerCase()
+# 標準ブラウザ
+if (_useragent.match(/^.*android.*mobile safari.*$/i) && !_useragent.match(/^.*[^0.9] chrome.*/i))
+    _standardbrowser = true
+else
+    _standardbrowser = false
+
 # ゲーム起動時からの経過時間（秒）
 LAPSEDTIME          = 0
 
@@ -107,35 +115,44 @@ window.onload = ->
         _scenes[i] = scene
         rootScene.addChild(scene)
 
+    if (DEBUG == true)
+        _DEBUGLABEL = new Label()
+        _DEBUGLABEL.x = 0
+        _DEBUGLABEL.y = 0
+        _DEBUGLABEL.color = "white"
+        _DEBUGLABEL.font = "10px 'Arial'"
+        _scenes[TOPSCENE].addChild(_DEBUGLABEL)
+
     ###
-    # Three.jsのレンダラー初期化
-    RENDERER = new THREE.WebGLRenderer({ antialias:true })
-    RENDERER.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
-    RENDERER.setClearColorHex(0x000000, 0.0)
-    document.getElementById('webgl').appendChild(RENDERER.domElement)
-    scale = Math.min(
-        innerWidth / SCREEN_WIDTH
-        innerHeight / SCREEN_HEIGHT
-    )
-    scrwidth = Math.floor(SCREEN_WIDTH * scale)
-    scrheight = Math.floor(SCREEN_HEIGHT * scale)
-    left = Math.floor((window.innerWidth - scrwidth) / 2)
-    top = Math.floor((window.innerHeight - scrheight) / 2)
-    webglelm = document.querySelector('#webgl')
-    webglelm.style.webkitTransformOrigin = left+"px "+top+"px"
-    webglelm.style.webkitTransform = "scale("+scale+", "+scale+") translate("+left+"px, "+top+"px)"
-    # シーン生成
-    glscene = new THREE.Scene()
-    _scenes[WEBGLSCENE] = glscene
-    # デフォルトカメラ生成
-    CAMERA = new THREE.PerspectiveCamera(24, SCREEN_WIDTH / SCREEN_HEIGHT)
-    CAMERA.position = new THREE.Vector3(0, 100, 100)
-    CAMERA.lookAt(new THREE.Vector3(0, 0, 0))
-    glscene.add(CAMERA)
-    # デフォルトライト生成
-    LIGHT = new THREE.DirectionalLight(0xffffff)
-    LIGHT.position = new THREE.Vector3(0.577, 0.577, 0.577)
-    glscene.add(LIGHT)
+    if (isWebGL() == true)
+        # Three.jsのレンダラー初期化
+        RENDERER = new THREE.WebGLRenderer({ antialias:true })
+        RENDERER.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
+        RENDERER.setClearColorHex(0x000000, 0.0)
+        document.getElementById('webgl').appendChild(RENDERER.domElement)
+        scale = Math.min(
+            innerWidth / SCREEN_WIDTH
+            innerHeight / SCREEN_HEIGHT
+        )
+        scrwidth = Math.floor(SCREEN_WIDTH * scale)
+        scrheight = Math.floor(SCREEN_HEIGHT * scale)
+        left = Math.floor((window.innerWidth - scrwidth) / 2)
+        top = Math.floor((window.innerHeight - scrheight) / 2)
+        webglelm = document.querySelector('#webgl')
+        webglelm.style.webkitTransformOrigin = left+"px "+top+"px"
+        webglelm.style.webkitTransform = "scale("+scale+", "+scale+") translate("+left+"px, "+top+"px)"
+        # シーン生成
+        glscene = new THREE.Scene()
+        _scenes[WEBGLSCENE] = glscene
+        # デフォルトカメラ生成
+        CAMERA = new THREE.PerspectiveCamera(24, SCREEN_WIDTH / SCREEN_HEIGHT)
+        CAMERA.position = new THREE.Vector3(0, 100, 100)
+        CAMERA.lookAt(new THREE.Vector3(0, 0, 0))
+        glscene.add(CAMERA)
+        # デフォルトライト生成
+        LIGHT = new THREE.DirectionalLight(0xffffff)
+        LIGHT.position = new THREE.Vector3(0.577, 0.577, 0.577)
+        glscene.add(LIGHT)
     ###
 
     core.onload = ->
@@ -148,12 +165,12 @@ window.onload = ->
             for obj in _objects
                 if (obj._type == WEBGL)
                     continue
-                if (obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
+                if (obj.active == true && obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
                     obj.motionObj.behavior()
+            ###
                 if (obj.motionObj? && obj.motionObj.sprite?)
                     obj.motionObj.sprite.visible = false
-                    #_scenes[obj.motionObj._scene].removeChild(obj.motionObj.sprite)
-
+                    _scenes[obj.motionObj._scene].removeChild(obj.motionObj.sprite)
             _objects.sort (a, b)->
                 if (a.motionObj? && b.motionObj? && a.motionObj.sprite? && b.motionObj.sprite?)
                     a_z = a.motionObj.z
@@ -170,7 +187,19 @@ window.onload = ->
                 if (obj.motionObj? && obj.motionObj.sprite?)
                     #_scenes[obj.motionObj._scene].addChild(obj.motionObj.sprite)
                     obj.motionObj.sprite.visible = obj.motionObj.visible
+            ###
     core.start()
+
+debugwrite = (param)->
+    str = _DEBUGLABEL.text += if (param.str?) then param.str else ""
+    fontsize = if (param.fontsize?) then param.fontsize else 10
+    fontcolor = if (param.fontcolor?) then param.fontcolor else "white"
+    if (DEBUG == true)
+        _DEBUGLABEL.font = fontsize+"px 'Arial'"
+        _DEBUGLABEL.text = str
+        _DEBUGLABEL.color = fontcolor
+debugclear =->
+    _DEBUGLABEL.text = ""
 
 #******************************************************************************
 # 2D/3D共用オブジェクト生成メソッド
@@ -315,8 +344,9 @@ setMotionObj = (x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, w
 removeObject = (motionObj)->
     if (!motionObj?)
         return
-    ret = false
+
     # 削除しようとしているmotionObjがオブジェクトリストのどこに入っているか探す
+    ret = false
     for object in _objects
         if (!object.motionObj?)
             continue
@@ -333,9 +363,9 @@ removeObject = (motionObj)->
         object.motionObj.sprite.destroy()
     else
         _scenes[object.motionObj._scene].removeChild(object.motionObj.sprite)
-    object.motionObj.sprite = 0
+    object.motionObj.sprite = undefined
 
-    object.motionObj = 0
+    object.motionObj = undefined
     object.active = false
 
 #**********************************************************************
@@ -344,6 +374,8 @@ removeObject = (motionObj)->
 getObject = (id)->
     ret = undefined
     for i in [0..._objects.length]
+        if (!_objects[i]?)
+            continue
         if (!_objects[i].motionObj?)
             continue
         if (_objects[i].motionObj._uniqueID == id)

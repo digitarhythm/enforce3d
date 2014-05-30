@@ -48,5 +48,12 @@ setCookie = (name, value, expireValue = 1)->
 getCookie = (name)->
     return $.cookie(name)
 
+# WebGL check
+isWebGL = ->
+    try
+        return !! window.WebGLRenderingContext && !! document.createElement('canvas').getContext('experimental-webgl')
+    catch e
+        return false
+
 # do noting
 nop =->

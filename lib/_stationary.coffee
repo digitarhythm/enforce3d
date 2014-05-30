@@ -78,10 +78,11 @@ class _stationary
                     @y += @ys
                     @z += @zs
 
-                    if (@opacity != @sprite.opacity && @sprite.opacity == @opacity_back)
-                        @sprite.opacity = @opacity
-                    else
-                        @opacity = @sprite.opacity
+                    if (@opacity != @sprite.opacity)
+                        if (@sprite.opacity == @opacity_back)
+                            @sprite.opacity = @opacity
+                        else
+                            @opacity = @sprite.opacity
                     @opacity_back = @sprite.opacity
 
                     @sprite.visible = @visible

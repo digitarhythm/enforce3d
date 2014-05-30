@@ -22,6 +22,7 @@ cp -af $ENF/media/* $PROJ/media/
 cp -af $ENF/src/enforceMain.coffee $PROJ/src/
 cp -af $ENF/src/environ.coffee $PROJ/src/
 cp -af $ENF/extlib/* $PROJ/extlib/
+cp -af $ENF/lib/config.ini $PROJ/lib/
 cp -af $ENF/lib/sqlite3.db $PROJ/lib/
 
 # ver2.0を示すファイルを生成

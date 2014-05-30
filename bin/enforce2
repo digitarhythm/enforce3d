@@ -71,13 +71,12 @@ fi
 
 case ${opt} in
 new)
-	pkg=$2
-    pkg2=$3
-	if [ -z "$pkg" ]; then
+    pkg=$3
+	if [ -z "$opt2" ]; then
 		echo "Please specify an option."
 		exit
 	fi
-	${cwd}/_enforce_newproj ${pkg} ${pkg2}
+	${cwd}/_enforce_newproj ${opt2} ${pkg}
 ;;
 
 build)
@@ -85,7 +84,7 @@ build)
 		echo "Please perform in a package directory."
 		exit
 	fi
-	${cwd}/_enforce_build
+	${cwd}/_enforce_build ${opt2}
 ;;
 
 update)
