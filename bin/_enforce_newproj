@@ -10,6 +10,7 @@ echo "Project Dcirectory:"$PROJ
 mkdir -p $PROJ/lib
 mkdir -p $PROJ/media/picture
 mkdir -p $PROJ/media/sound
+mkdir -p $PROJ/media/collada
 mkdir -p $PROJ/src
 mkdir -p $PROJ/sysobject
 mkdir -p $PROJ/usrobject
@@ -25,8 +26,8 @@ cp -af $ENF/extlib/* $PROJ/extlib/
 cp -af $ENF/lib/config.ini $PROJ/lib/
 cp -af $ENF/lib/sqlite3.db $PROJ/lib/
 
-# ver2.0を示すファイルを生成
-echo '2.0' > $PROJ/lib/version
+# ver3.0を示すファイルを生成
+echo '3.0' > $PROJ/lib/version
 
 # サンプルソースをコピー
 cp -af $ENF/src/sample.coffee $PROJ/src/

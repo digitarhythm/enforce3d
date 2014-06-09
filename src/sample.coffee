@@ -19,19 +19,11 @@ class sample extends _stationary
         super()
         switch @_processnumber
             when 0
-                if (@y > SCREEN_HEIGHT - (@height / 2))
-                    @y = SCREEN_HEIGHT - (@height / 2)
-                    @ys = -@ys
-
-                if (@x > SCREEN_WIDTH - @width / 2)
-                    @x = SCREEN_WIDTH - @width / 2
-                    @xs = -@xs
-                    @scaleX = -@scaleX
-
-                if (@x < @width / 2)
-                    @x = @width / 2
-                    @xs = -@xs
-                    @scaleX = -@scaleX
+                if (@y < -40)
+                    @y = -40
+                    @ys2 = @ys
+                    @ys *= -1
+                    JSLog("ys2=%@, ys=%@", @ys2, @ys)
 
     #**************************
     # touch event
