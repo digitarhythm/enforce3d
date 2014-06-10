@@ -27,6 +27,9 @@ class _stationary
             @scaleX = initparam['scaleX']
             @scaleY = initparam['scaleY']
             @scaleZ = initparam['scaleZ']
+            @alpha = initparam['alpha']
+            @beta = initparam['beta']
+            @gamma = initparam['gamma']
             @gravity = initparam['gravity']
             @intersectFlag = initparam['intersectFlag']
             @opacity = initparam['opacity']
@@ -63,8 +66,17 @@ class _stationary
         if (@sprite?)
             switch (@_type)
                 when COLLADA
-                    @sprite.position.set(@x, @y, @z)
+                    @sprite.position.set(Math.floor(@x), Math.floor(@y), Math.floor(@z))
                     @sprite.scale.set(@scaleX, @scaleY, @scaleZ)
+                    if (@alpha > 360)
+                        @alpha = @alpha % 360
+                    if (@beta > 360)
+                        @beta = @beta % 360
+                    if (@gamma > 360)
+                        @gamma = @gamma % 360
+                    @sprite.rotation.x = @alpha / 180 * Math.PI
+                    @sprite.rotation.y = @beta / 180 * Math.PI
+                    @sprite.rotation.z = @gamma / 180 * Math.PI
                     @ys += @gravity
                     @x += @xs
                     @y += @ys

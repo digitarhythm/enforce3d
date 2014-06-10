@@ -59,7 +59,6 @@ window.onload = ->
         i = 0
         for obj of MEDIALIST
             imagearr[i++] = MEDIALIST[obj]
-        #core.preload(imagearr)
 
     window.addEventListener 'devicemotion', (e)=>
         MOTION_ACCEL = e.acceleration
@@ -89,7 +88,7 @@ window.onload = ->
     rootScene = new THREE.Scene()
     # デフォルトカメラ生成
     CAMERA = new THREE.PerspectiveCamera(24, SCREEN_WIDTH / SCREEN_HEIGHT)
-    CAMERA.position = new THREE.Vector3(0, 100, 100)
+    CAMERA.position = new THREE.Vector3(0, 100, 1000)
     CAMERA.lookAt(new THREE.Vector3(0, 0, 0))
     rootScene.add(CAMERA)
     # デフォルトライト生成
@@ -97,35 +96,18 @@ window.onload = ->
     LIGHT.position = new THREE.Vector3(0.577, 0.577, 0.577)
     rootScene.add(LIGHT)
 
-    #core.onload = ->
     for i in [0...OBJECTNUM]
         _objects[i] = new _originObject()
     _main = new enforceMain()
     enterframe()
-    #rootScene.addEventListener 'enterframe', (e)->
-    #    LAPSEDTIME = parseFloat((core.frame / FPS).toFixed(2))
-    #    for obj in _objects
-    #        if (obj.active == true && obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
-    #            obj.motionObj.behavior()
-    #core.start()
 
 enterframe = ->
     for obj in _objects
         if (obj.active == true && obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
             obj.motionObj.behavior()
+    RENDERER.render(rootScene, CAMERA)
     setTimeout(enterframe, 1000 / FPS)
 
-
-debugwrite = (param)->
-    str = _DEBUGLABEL.text += if (param.str?) then param.str else ""
-    fontsize = if (param.fontsize?) then param.fontsize else 10
-    fontcolor = if (param.fontcolor?) then param.fontcolor else "white"
-    if (DEBUG == true)
-        _DEBUGLABEL.font = fontsize+"px 'Arial'"
-        _DEBUGLABEL.text = str
-        _DEBUGLABEL.color = fontcolor
-debugclear =->
-    _DEBUGLABEL.text = ""
 
 #******************************************************************************
 # 共用オブジェクト生成メソッド
@@ -147,6 +129,9 @@ addObject = (param)->
     scaleX = if (param.scaleX?) then param.scaleX else 1.0
     scaleY = if (param.scaleY?) then param.scaleY else 1.0
     scaleZ = if (param.scaleZ?) then param.scaleZ else 1.0
+    alpha = if (param.alpha?) then param.alpha else 0.0
+    beta = if (param.beta?) then param.beta else 0.0
+    gamma = if (param.gamma?) then param.gamma else 0.0
 
     if (motionObj == undefined)
         motionObj = undefined
@@ -165,15 +150,15 @@ addObject = (param)->
                     motionsprite.scale.set(scaleX, scaleY, scaleZ)
                     rootScene.add(motionsprite)
                     # 動きを定義したオブジェクトを生成する
-                    #retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj)
-                    #return retObject
+                    retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma)
+                    return retObject
         else
             retobject = undefined
             motionsprite = undefined
 
     return retobject
 
-setMotionObj = (x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj)->
+setMotionObj = (x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma)->
     # 動きを定義したオブジェクトを生成する
     initparam = []
     initparam['x'] = x
@@ -190,6 +175,9 @@ setMotionObj = (x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, o
     initparam['scaleX'] = scaleX
     initparam['scaleY'] = scaleY
     initparam['scaleZ'] = scaleZ
+    initparam['alpha'] = alpha
+    initparam['beta'] = beta
+    initparam['gamma'] = gamma
     initparam['gravity'] = gravity
     initparam['intersectFlag'] = true
     initparam['opacity'] = opacity
