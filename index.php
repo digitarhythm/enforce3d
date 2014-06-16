@@ -1,5 +1,6 @@
 <?php
 $ini = parse_ini_file("lib/config.ini", true);
+$oculus = $ini['ENVIRON']['OCULUS'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -11,6 +12,18 @@ $ini = parse_ini_file("lib/config.ini", true);
 	<script type="text/javascript" src="usrobject/environ.js"></script>
     <script type="text/javascript" src="extlib/three.min.js"></script>
     <script type="text/javascript" src="extlib/ColladaLoader.js"></script>
+<?php
+    if ($oculus == true) {
+?>
+    <script type="text/javascript" src="extlib/OculusRiftEffect.js"></script>
+    <script type="text/javascript">OCULUS = true;</script>
+<?php
+    } else {
+?>
+    <script type="text/javascript">OCULUS = false;</script>
+<?php
+    }
+?>
     <script type="text/javascript" src="sysobject/enforce.core.js"></script>
 <?php
     // #################################################################################

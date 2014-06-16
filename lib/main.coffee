@@ -38,6 +38,7 @@ LAPSEDTIME          = 0
 RENDERER            = undefined
 CAMERA              = undefined
 LIGHT               = undefined
+EFFECT              = undefined
 
 # オブジェクトが入っている配列
 _objects            = []
@@ -69,26 +70,24 @@ window.onload = ->
         MOTION_ROTATE.gamma = e.gamma
 
     # Three.jsのレンダラー初期化
+    SCREEN_WIDTH = innerWidth
+    SCREEN_HEIGHT = innerHeight
     RENDERER = new THREE.WebGLRenderer({ antialias:true })
     RENDERER.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
     RENDERER.setClearColorHex(0x000000, 1.0)
     document.getElementById('webgl').appendChild(RENDERER.domElement)
-    scale = Math.min(
-        innerWidth / SCREEN_WIDTH
-        innerHeight / SCREEN_HEIGHT
-    )
-    scrwidth = Math.floor(SCREEN_WIDTH * scale)
-    scrheight = Math.floor(SCREEN_HEIGHT * scale)
-    left = Math.floor((window.innerWidth - scrwidth) / 2)
-    top = Math.floor((window.innerHeight - scrheight) / 2)
-    webglelm = document.querySelector('#webgl')
-    webglelm.style.webkitTransformOrigin = left+"px "+top+"px"
-    webglelm.style.webkitTransform = "scale("+scale+", "+scale+") translate("+left+"px, "+top+"px)"
     # シーン生成
     rootScene = new THREE.Scene()
+    # OculusEffect
+    if (OCULUS == true)
+        EFFECT = new THREE.OculusRiftEffect(RENDERER)
+        EFFECT.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
     # デフォルトカメラ生成
-    CAMERA = new THREE.PerspectiveCamera(24, SCREEN_WIDTH / SCREEN_HEIGHT)
-    CAMERA.position = new THREE.Vector3(0, 100, 1000)
+    CAMERA = new THREE.PerspectiveCamera(12, SCREEN_WIDTH / SCREEN_HEIGHT)
+    if (OCULUS == true)
+        CAMERA.position = new THREE.Vector3(0, 0, 32)
+    else
+        CAMERA.position = new THREE.Vector3(0, 0, 240)
     CAMERA.lookAt(new THREE.Vector3(0, 0, 0))
     rootScene.add(CAMERA)
     # デフォルトライト生成
@@ -105,7 +104,10 @@ enterframe = ->
     for obj in _objects
         if (obj.active == true && obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
             obj.motionObj.behavior()
-    RENDERER.render(rootScene, CAMERA)
+    if (OCULUS == true)
+        EFFECT.render(rootScene, CAMERA)
+    else
+        RENDERER.render(rootScene, CAMERA)
     setTimeout(enterframe, 1000 / FPS)
 
 
@@ -140,6 +142,7 @@ addObject = (param)->
     switch (_type)
         when COLLADA
             if (MEDIALIST[image]?)
+                JSLog(MEDIALIST[image])
                 loader = new THREE.ColladaLoader()
                 loader.options.convertUpAxis = true
                 motionsprite = undefined

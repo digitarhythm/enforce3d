@@ -19,11 +19,12 @@ class sample extends _stationary
         super()
         switch @_processnumber
             when 0
-                if (@y < -40)
-                    @y = -40
-                    @ys2 = @ys
-                    @ys *= -1
-                    JSLog("ys2=%@, ys=%@", @ys2, @ys)
+                @alpha++
+                @beta++
+                @gamma++
+                if (@y < -100)
+                    @y = -100
+                    @ys = 12.0
 
     #**************************
     # touch event

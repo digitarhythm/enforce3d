@@ -64,23 +64,22 @@ class _stationary
     behavior:->
         # スプライトの座標等パラメータを更新する
         if (@sprite?)
-            switch (@_type)
-                when COLLADA
-                    @sprite.position.set(Math.floor(@x), Math.floor(@y), Math.floor(@z))
-                    @sprite.scale.set(@scaleX, @scaleY, @scaleZ)
-                    if (@alpha > 360)
-                        @alpha = @alpha % 360
-                    if (@beta > 360)
-                        @beta = @beta % 360
-                    if (@gamma > 360)
-                        @gamma = @gamma % 360
-                    @sprite.rotation.x = @alpha / 180 * Math.PI
-                    @sprite.rotation.y = @beta / 180 * Math.PI
-                    @sprite.rotation.z = @gamma / 180 * Math.PI
-                    @ys += @gravity
-                    @x += @xs
-                    @y += @ys
-                    @z += @zs
+                @sprite.position.set(Math.floor(@x), Math.floor(@y), Math.floor(@z))
+                @sprite.visible = @visible
+                @sprite.scale.set(@scaleX, @scaleY, @scaleZ)
+                if (@alpha > 360)
+                    @alpha = @alpha % 360
+                if (@beta > 360)
+                    @beta = @beta % 360
+                if (@gamma > 360)
+                    @gamma = @gamma % 360
+                @sprite.rotation.x = @alpha / 180 * Math.PI
+                @sprite.rotation.y = @beta / 180 * Math.PI
+                @sprite.rotation.z = @gamma / 180 * Math.PI
+                @ys += @gravity
+                @x += @xs
+                @y += @ys
+                @z += @zs
 
         if (@_waittime > 0 && LAPSEDTIME > @_waittime)
             @_waittime = 0

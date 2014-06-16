@@ -9,7 +9,7 @@
 # static values setting ***********************************************************************************
 DEBUG           = true                      # デバッグモード
 SCREEN_WIDTH    = 480                       # 画面の幅
-SCREEN_HEIGHT   = 640                       # 画面の高さ
+SCREEN_HEIGHT   = 800                       # 画面の高さ
 FPS             = 60                        # フレームレート
 BGCOLOR         = "black"                   # 背景色
 OBJECTNUM       = 256                       # キャラの最大数
@@ -17,5 +17,5 @@ GRAVITY         = 9.8                       # 重力（box2dで使用）
 
 # preloading image list ***********************************************************************************
 MEDIALIST       = {
-    chara1: 'media/picture/chara1.png'
+    miku: 'media/collada/negimiku.dae'
 }
