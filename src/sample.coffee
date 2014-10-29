@@ -22,9 +22,9 @@ class sample extends _stationary
                 @alpha++
                 @beta++
                 @gamma++
-                if (@y < -100)
-                    @y = -100
-                    @ys = 12.0
+                if (@y < -50)
+                    @y = -50
+                    @ys = 5.0
 
     #**************************
     # touch event

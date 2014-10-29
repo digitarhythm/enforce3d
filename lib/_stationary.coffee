@@ -76,10 +76,13 @@ class _stationary
                 @sprite.rotation.x = @alpha / 180 * Math.PI
                 @sprite.rotation.y = @beta / 180 * Math.PI
                 @sprite.rotation.z = @gamma / 180 * Math.PI
-                @ys += @gravity
+                @ys -= @gravity
                 @x += @xs
                 @y += @ys
                 @z += @zs
+                @sprite.x = Math.floor(@x)
+                @sprite.y = Math.floor(@y)
+                @sprite.z = Math.floor(@z)
 
         if (@_waittime > 0 && LAPSEDTIME > @_waittime)
             @_waittime = 0

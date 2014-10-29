@@ -8,12 +8,11 @@
 
 # static values setting ***********************************************************************************
 DEBUG           = true                      # デバッグモード
-SCREEN_WIDTH    = 480                       # 画面の幅
-SCREEN_HEIGHT   = 800                       # 画面の高さ
-FPS             = 60                        # フレームレート
 BGCOLOR         = "black"                   # 背景色
 OBJECTNUM       = 256                       # キャラの最大数
 GRAVITY         = 9.8                       # 重力（box2dで使用）
+FOGCOLOR        = "#ffffff"                 # フォグの色
+FOGLEVEL        = 0.0                       # フォルの量
 
 # preloading image list ***********************************************************************************
 MEDIALIST       = {

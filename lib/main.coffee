@@ -15,6 +15,18 @@
 # オブジェクトの種類
 CONTROL             = 0
 COLLADA             = 10
+PRIMITIVE           = 20
+
+# プリミティブ
+PLANE               = 0
+CUBE                = 1
+CIRCLE              = 2
+CYLINDER            = 3
+SPHERE              = 4
+ICOSAHEDRON         = 5
+TORUS               = 6
+TORUSKNOT           = 7
+BUFFER              = 8
 
 # グローバル初期化
 
@@ -47,7 +59,16 @@ _objects            = []
 _main               = undefined
 
 # 3Dのscene
-rootScene         = undefined
+rootScene           = undefined
+
+# スクリーンサイズ
+PIXELRATIO          = window.devicePixelRatio
+SCREEN_WIDTH        = window.innerWidth
+SCREEN_HEIGHT       = window.innerHeight
+ASPECT              = SCREEN_WIDTH / SCREEN_HEIGHT
+
+# OculusRiftEffect
+WORLD_FACTOR        = 1.0
 
 #******************************************************************************
 # 起動時の処理
@@ -56,10 +77,10 @@ rootScene         = undefined
 # ゲーム起動時の処理
 window.onload = ->
     if (MEDIALIST?)
-        imagearr = []
+        modelarr = []
         i = 0
         for obj of MEDIALIST
-            imagearr[i++] = MEDIALIST[obj]
+            modelarr[i++] = MEDIALIST[obj]
 
     window.addEventListener 'devicemotion', (e)=>
         MOTION_ACCEL = e.acceleration
@@ -69,31 +90,55 @@ window.onload = ->
         MOTION_ROTATE.beta = e.beta
         MOTION_ROTATE.gamma = e.gamma
 
-    # Three.jsのレンダラー初期化
-    SCREEN_WIDTH = innerWidth
-    SCREEN_HEIGHT = innerHeight
-    RENDERER = new THREE.WebGLRenderer({ antialias:true })
+    RENDERER = new THREE.WebGLRenderer()
+    RENDERER.setClearColor(0x303030)
     RENDERER.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
-    RENDERER.setClearColorHex(0x000000, 1.0)
     document.getElementById('webgl').appendChild(RENDERER.domElement)
-    # シーン生成
+
+    CAMERA = new THREE.PerspectiveCamera(90, ASPECT, 0.1, 1000)
+    CAMERA.position.set(0, 200, 900)
+
     rootScene = new THREE.Scene()
-    # OculusEffect
+    rootScene.fog = new THREE.FogExp2( FOGCOLOR, FOGLEVEL );
+
+    # カメラ設定
     if (OCULUS == true)
-        EFFECT = new THREE.OculusRiftEffect(RENDERER)
-        EFFECT.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
-    # デフォルトカメラ生成
-    CAMERA = new THREE.PerspectiveCamera(12, SCREEN_WIDTH / SCREEN_HEIGHT)
-    if (OCULUS == true)
-        CAMERA.position = new THREE.Vector3(0, 0, 32)
+        # OculusRiftEffect設定
+        OculusRift = {
+            hResolution: SCREEN_WIDTH
+            vResolution: SCREEN_HEIGHT
+            hScreenSize: 0.14976
+            vScreenSize: 0.0936
+            interpupillaryDistance: 0.064
+            lensSeparationDistance: 0.064
+            eyeToScreenDistance: 0.041
+            distortionK: [1.0, 0.22, 0.24, 0.0]
+            chromaAbParameter: [0.996, -0.004, 1.014, 0.0]
+        }
+        EFFECT = new THREE.OculusRiftEffect(RENDERER, {
+            HMD: OculusRift
+            worldFactor: WORLD_FACTOR
+        })
+        CAMERA.position = new THREE.Vector3(0, 200, 900)
     else
-        CAMERA.position = new THREE.Vector3(0, 0, 240)
+        CAMERA.position = new THREE.Vector3(0, 0, 1024)
     CAMERA.lookAt(new THREE.Vector3(0, 0, 0))
     rootScene.add(CAMERA)
+
     # デフォルトライト生成
-    LIGHT = new THREE.DirectionalLight(0xffffff)
+    LIGHT = new THREE.DirectionalLight(0x303030)
     LIGHT.position = new THREE.Vector3(0.577, 0.577, 0.577)
+    LIGHT.castShadow = true
     rootScene.add(LIGHT)
+    # 環境光オブジェクト(LIGHT2)の設定　
+    LIGHT2 = new THREE.AmbientLight(0xffffff)
+    # sceneに環境光オブジェクト(LIGHT2)を追加                
+    rootScene.add(LIGHT2)
+
+#    geometry = new THREE.SphereGeometry(10, 100, 100)
+#    material = new THREE.MeshPhongMaterial({color: 'white'})
+#    motionsprite = new THREE.Mesh(geometry, material)
+#    rootScene.add(motionsprite)
 
     for i in [0...OBJECTNUM]
         _objects[i] = new _originObject()
@@ -104,11 +149,13 @@ enterframe = ->
     for obj in _objects
         if (obj.active == true && obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
             obj.motionObj.behavior()
+
     if (OCULUS == true)
         EFFECT.render(rootScene, CAMERA)
     else
         RENDERER.render(rootScene, CAMERA)
-    setTimeout(enterframe, 1000 / FPS)
+
+    setTimeout(enterframe, 1000 / 60)
 
 
 #******************************************************************************
@@ -124,8 +171,13 @@ addObject = (param)->
     xs = if (param.xs?) then param.xs else 0.0
     ys = if (param.ys?) then param.ys else 0.0
     zs = if (param.zs?) then param.zs else 0.0
+    radius = if (param.radius?) then param.radius else 10.0
+    width = if (param.width?) then param.width else 10.0
+    height = if (param.height?) then param.height else 10.0
+    depth = if (param.depth?) then param.depth else 10.0
+    color = if (param.color?) then param.color else 'gray'
     gravity = if (param.gravity?) then param.gravity else 0.0
-    image = if (param.image?) then param.image else undefined
+    model = if (param.model?) then param.model else undefined
     opacity = if (param.opacity?) then param.opacity else 1.0
     visible = if (param.visible?) then param.visible else true
     scaleX = if (param.scaleX?) then param.scaleX else 1.0
@@ -134,6 +186,9 @@ addObject = (param)->
     alpha = if (param.alpha?) then param.alpha else 0.0
     beta = if (param.beta?) then param.beta else 0.0
     gamma = if (param.gamma?) then param.gamma else 0.0
+    divx = if (param.divx?) then param.divx else 64
+    divy = if (param.divy?) then param.divy else 64
+    texture = if (param.texture?) then param.texture else undefined
 
     if (motionObj == undefined)
         motionObj = undefined
@@ -141,13 +196,10 @@ addObject = (param)->
     # スプライトを生成
     switch (_type)
         when COLLADA
-            if (MEDIALIST[image]?)
-                JSLog(MEDIALIST[image])
+            if (MEDIALIST[model]?)
                 loader = new THREE.ColladaLoader()
                 loader.options.convertUpAxis = true
-                motionsprite = undefined
-                retobject = undefined
-                loader.load MEDIALIST[image], (collada)=>
+                loader.load MEDIALIST[model], (collada)=>
                     motionsprite = collada.scene
                     motionsprite.position.set(x, y, z)
                     motionsprite.scale.set(scaleX, scaleY, scaleZ)
@@ -155,11 +207,45 @@ addObject = (param)->
                     # 動きを定義したオブジェクトを生成する
                     retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma)
                     return retObject
-        else
-            retobject = undefined
-            motionsprite = undefined
+            else
+                retobject = undefined
+                motionsprite = undefined
 
-    return retobject
+        when PRIMITIVE
+            switch (model)
+                when PLANE
+                    geometry = new THREE.PlaneGeometry(width, height, divx, divy)
+                when CUBE
+                    geometry = new THREE.CubeGeometry(width, height, depth)
+                    nop()
+                when CIRCLE
+                    nop()
+                when CYLINDER
+                    nop()
+                when SPHERE
+                    geometry = new THREE.SphereGeometry(radius, width, height)
+                when ICOSAHEDRON
+                    nop()
+                when TORUS
+                    nop()
+                when TORUSKNOT
+                    nop()
+                when BUFFER
+                    nop()
+
+            if (texture?)
+                map = THREE.ImageUtils.loadTexture(MEDIALIST[texture])
+                material = new THREE.MeshLambertMaterial {
+                    map: map
+                }
+            else
+                material = new THREE.MeshPhongMaterial({color: color})
+            motionsprite = new THREE.Mesh(geometry, material)
+            motionsprite.position.set(x, y, z)
+            rootScene.add(motionsprite)
+            retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma)
+
+    return retObject
 
 setMotionObj = (x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma)->
     # 動きを定義したオブジェクトを生成する

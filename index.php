@@ -10,6 +10,7 @@ $oculus = $ini['ENVIRON']['OCULUS'];
     <meta name="viewport" content="width=device-width, user-scalable=no, minimal-ui">
     <meta name="apple-mobile-web-app-capable" content="yes">
 	<script type="text/javascript" src="usrobject/environ.js"></script>
+    <script type="text/javascript" src="extlib/jquery-2.1.0.min.js"></script>
     <script type="text/javascript" src="extlib/three.min.js"></script>
     <script type="text/javascript" src="extlib/ColladaLoader.js"></script>
 <?php
@@ -57,7 +58,7 @@ $oculus = $ini['ENVIRON']['OCULUS'];
         }
     </style>
 </head>
-<body bgcolor="gray">
+<body>
     <div id="webgl"></div>
 </body>
 </html>

@@ -4,11 +4,11 @@ class enforceMain
         @mikuObj = addObject
             motionObj: sample
             type: COLLADA
-            image: 'negimiku'
+            model: 'miku'
             x: 0
             y: 100
             z: 0
-            scaleX: 3.0
-            scaleY: 3.0
-            scaleZ: 3.0
-            gravity: -0.3
+            scaleX: 1.0
+            scaleY: 1.0
+            scaleZ: 1.0
+            gravity: 0.1
