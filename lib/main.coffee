@@ -30,10 +30,26 @@ BUFFER              = 8
 
 # グローバル初期化
 
+# ゲームパッド情報格納変数
+HORIZONTAL          = 0
+VERTICAL            = 1
+_GAMEPADSINFO       = []
+PADBUTTONS          = []
+PADBUTTONS[0]       = [false, false]
+PADAXES             = []
+PADAXES[0]          = [0, 0]
+ANALOGSTICK         = []
+ANALOGSTICK[0]      = [0, 0, 0, 0]
+
 # センサー系
 MOTION_ACCEL        = [x:0, y:0, z:0]
-MOTION_GRAVITY      = [x:0, y:0, z:0]
-MOTION_ROTATE       = [alpha:0, beta:0, gamma:0]
+#MOTION_GRAVITY      = [x:0, y:0, z:0]
+#MOTION_ROTATE       = [alpha:0, beta:0, gamma:0]
+SENSOR              = undefined
+
+# 数学式
+RAD                 = (Math.PI / 180.0)
+DEG                 = (180.0 / Math.PI)
 
 # User Agent
 _useragent = window.navigator.userAgent.toLowerCase()
@@ -61,14 +77,32 @@ _main               = undefined
 # 3Dのscene
 rootScene           = undefined
 
+# OculusRiftEffect
+WORLD_FACTOR        = 1.0
+VRSTATE             = undefined
+
+# User Agent
+_useragent = window.navigator.userAgent.toLowerCase()
+# 標準ブラウザ
+if (_useragent.match(/^.*android.*?mobile safari.*$/i) != null && _useragent.match(/^.*\) chrome.*/i) == null)
+    _defaultbrowser = true
+else
+    _defaultbrowser = false
+# ブラウザ大分類
+if (_useragent.match(/.* firefox\/.*/))
+    _browserMajorClass = "firefox"
+else if (_useragent.match(/.*version\/.* safari\/.*/))
+    _browserMajorClass = "safari"
+else if (_useragent.match(/.*chrome\/.* safari\/.*/))
+    _browserMajorClass = "chrome"
+else
+    _browserMajorClass = "unknown"
+
 # スクリーンサイズ
 PIXELRATIO          = window.devicePixelRatio
 SCREEN_WIDTH        = window.innerWidth
-SCREEN_HEIGHT       = window.innerHeight
+SCREEN_HEIGHT       = window.innerHeight + if (_browserMajorClass == "chrome") then 48 else 0
 ASPECT              = SCREEN_WIDTH / SCREEN_HEIGHT
-
-# OculusRiftEffect
-WORLD_FACTOR        = 1.0
 
 #******************************************************************************
 # 起動時の処理
@@ -76,33 +110,44 @@ WORLD_FACTOR        = 1.0
 
 # ゲーム起動時の処理
 window.onload = ->
+    # Status Area
+    STATUSAREA = document.getElementById('status')
+
+    #STATUSAREA.innerHTML = "pixelratio="+PIXELRATIO
+
     if (MEDIALIST?)
         modelarr = []
         i = 0
         for obj of MEDIALIST
             modelarr[i++] = MEDIALIST[obj]
 
-    window.addEventListener 'devicemotion', (e)=>
-        MOTION_ACCEL = e.acceleration
-        MOTION_GRAVITY = e.accelerationIncludingGravity
-    window.addEventListener 'deviceorientation', (e)=>
-        MOTION_ROTATE.alpha = e.alpha
-        MOTION_ROTATE.beta = e.beta
-        MOTION_ROTATE.gamma = e.gamma
+#   window.addEventListener 'devicemotion', (e)=>
+#        MOTION_ACCEL = e.acceleration
+#        MOTION_GRAVITY = e.accelerationIncludingGravity
+#    window.addEventListener 'deviceorientation', (e)=>
+#        MOTION_ROTATE.alpha = e.alpha
+#        MOTION_ROTATE.beta = e.beta
+#        MOTION_ROTATE.gamma = e.gamma
 
     RENDERER = new THREE.WebGLRenderer()
-    RENDERER.setClearColor(0x303030)
     RENDERER.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
-    document.getElementById('webgl').appendChild(RENDERER.domElement)
+    renderelm = RENDERER.domElement
+    webglelm = document.getElementById('webgl')
+    webglelm.appendChild(renderelm)
 
-    CAMERA = new THREE.PerspectiveCamera(90, ASPECT, 0.1, 1000)
+    CAMERA = new THREE.PerspectiveCamera(270, ASPECT, 0.1, 3000)
     CAMERA.position.set(0, 200, 900)
 
     rootScene = new THREE.Scene()
     rootScene.fog = new THREE.FogExp2( FOGCOLOR, FOGLEVEL );
 
     # カメラ設定
-    if (OCULUS == true)
+    if (VRMODE == true)
+        vr.load (error)->
+            #if (error)
+            #    STATUSAREA.innerHTML = 'Plugin error'
+        VRSTATE = new vr.State()
+
         # OculusRiftEffect設定
         OculusRift = {
             hResolution: SCREEN_WIDTH
@@ -120,42 +165,117 @@ window.onload = ->
             worldFactor: WORLD_FACTOR
         })
         CAMERA.position = new THREE.Vector3(0, 200, 900)
+        document.addEventListener 'keydown', (e)->
+            switch (e.keyCode)
+                when 32 # Space
+                    vr.resetHmdOrientation()
+                    e.preventDefault()
+                when 70 # f
+                    if (vr.isFullScreen() == true)
+                        vr.exitFullScreen()
+                    else
+                        vr.enterFullScreen(true)
     else
-        CAMERA.position = new THREE.Vector3(0, 0, 1024)
+        CAMERA.position = new THREE.Vector3(0, 0, 0)
+
     CAMERA.lookAt(new THREE.Vector3(0, 0, 0))
     rootScene.add(CAMERA)
 
     # デフォルトライト生成
-    LIGHT = new THREE.DirectionalLight(0x303030)
-    LIGHT.position = new THREE.Vector3(0.577, 0.577, 0.577)
+    LIGHT = new THREE.DirectionalLight(0xffffff, 0.5)
+    LIGHT.position = new THREE.Vector3(100.0, 100.0, 100.0)
     LIGHT.castShadow = true
     rootScene.add(LIGHT)
-    # 環境光オブジェクト(LIGHT2)の設定　
+    # 環境光オブジェクト(LIGHT2)の設定
     LIGHT2 = new THREE.AmbientLight(0xffffff)
-    # sceneに環境光オブジェクト(LIGHT2)を追加                
+    # sceneに環境光オブジェクト(LIGHT2)を追加
     rootScene.add(LIGHT2)
 
-#    geometry = new THREE.SphereGeometry(10, 100, 100)
-#    material = new THREE.MeshPhongMaterial({color: 'white'})
-#    motionsprite = new THREE.Mesh(geometry, material)
-#    rootScene.add(motionsprite)
+    SENSOR = new THREE.DeviceOrientationControls(CAMERA)
 
     for i in [0...OBJECTNUM]
         _objects[i] = new _originObject()
     _main = new enforceMain()
+
     enterframe()
+
+    window.addEventListener 'resize', ->
+        STATUSAREA.innerHTML = "width="+SCREEN_WIDTH+", height="+SCREEN_HEIGHT+", raitio="+PIXELRATIO
+        SCREEN_WIDTH = window.innerWidth
+        SCREEN_HEIGHT = window.innerHeight + if (_browserMajorClass == "chrome") then 48 else 0
+        OculusRift = {
+            hResolution: SCREEN_WIDTH
+            vResolution: SCREEN_HEIGHT
+            hScreenSize: 0.14976
+            vScreenSize: 0.0936
+            interpupillaryDistance: 0.064
+            lensSeparationDistance: 0.064
+            eyeToScreenDistance: 0.041
+            distortionK: [1.0, 0.22, 0.24, 0.0]
+            chromaAbParameter: [0.996, -0.004, 1.014, 0.0]
+        }
+        ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT
+        CAMERA.aspect = ASPECT
+        CAMERA.updateProjectionMatrix()
+        RENDERER.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
+        EFFECT = new THREE.OculusRiftEffect(RENDERER, {
+            HMD: OculusRift
+            worldFactor: WORLD_FACTOR
+        })
+        ###
+        STATUSAREA.innerHTML = "width="+SCREEN_WIDTH+", height="+SCREEN_HEIGHT+", raitio="+PIXELRATIO
+        SCREEN_WIDTH = window.innerWidth
+        SCREEN_HEIGHT = window.innerHeight + if (_browserMajorClass == "chrome") then 48 else 0
+        ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT
+        CAMERA.aspect = ASPECT
+        CAMERA.updateProjectionMatrix()
+        if (VRMODE == true)
+            EFFECT.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
+        else
+            RENDERER.setSize(SCREEN_WIDTH, SCREEN_HEIGHT)
+        ###
+    , false
+
+    STATUSAREA.innerHTML = "width="+SCREEN_WIDTH+", height="+SCREEN_HEIGHT+", raitio="+PIXELRATIO
 
 enterframe = ->
     for obj in _objects
         if (obj.active == true && obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
             obj.motionObj.behavior()
+            if (obj.motionObj.vcanvas?)
+                if (obj.motionObj.vcanvas.readyState == obj.motionObj.vcanvas.HAVE_ENOUGH_DATA)
+                    if (obj.motionObj.vtexture)
+                        obj.motionObj.vtexture.needsUpdate = true
 
-    if (OCULUS == true)
+            # ジョイパッド処理
+            if (typeof gamepadProcedure == 'function')
+                _GAMEPADSINFO = gamepadProcedure()
+                for num in [0..._GAMEPADSINFO.length]
+                    if (!_GAMEPADSINFO[num]?)
+                        continue
+                    padobj = _GAMEPADSINFO[num]
+                    PADBUTTONS[num] = _GAMEPADSINFO[num].padbuttons
+                    PADAXES[num] = _GAMEPADSINFO[num].padaxes
+                    ANALOGSTICK[num] = _GAMEPADSINFO[num].analogstick
+
+    if (VRMODE == true)
+        if (!vr.pollState(VRSTATE))
+            return
+
+        if (VRSTATE.hmd.present)
+            CAMERA.quaternion.x = VRSTATE.hmd.rotation[0];
+            CAMERA.quaternion.y = VRSTATE.hmd.rotation[1];
+            CAMERA.quaternion.z = VRSTATE.hmd.rotation[2];
+            CAMERA.quaternion.w = VRSTATE.hmd.rotation[3];
+            #STATUSAREA.innerHTML = ''
+        else
+            SENSOR.update()
+            #status.innerHTML = 'OculusRift not found.'
         EFFECT.render(rootScene, CAMERA)
     else
         RENDERER.render(rootScene, CAMERA)
 
-    setTimeout(enterframe, 1000 / 60)
+    setTimeout(enterframe, 1000 / FPS)
 
 
 #******************************************************************************
@@ -189,6 +309,9 @@ addObject = (param)->
     divx = if (param.divx?) then param.divx else 64
     divy = if (param.divy?) then param.divy else 64
     texture = if (param.texture?) then param.texture else undefined
+    video = if (param.video?) then param.video else undefined
+    videoautoplay = if (param.videoautoplay?) then param.videoautoplay else false
+    videoloop = if (param.videoloop?) then param.videoloop else false
 
     if (motionObj == undefined)
         motionObj = undefined
@@ -199,25 +322,29 @@ addObject = (param)->
             if (MEDIALIST[model]?)
                 loader = new THREE.ColladaLoader()
                 loader.options.convertUpAxis = true
-                loader.load MEDIALIST[model], (collada)=>
+                loader.load(MEDIALIST[model])
+                #loader.load MEDIALIST[model], (collada)=>
+                ###
+                    JSLog(collada)
                     motionsprite = collada.scene
                     motionsprite.position.set(x, y, z)
                     motionsprite.scale.set(scaleX, scaleY, scaleZ)
                     rootScene.add(motionsprite)
                     # 動きを定義したオブジェクトを生成する
-                    retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma)
+                    retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma, vcanvas, vtexture)
                     return retObject
+                ###
             else
                 retobject = undefined
                 motionsprite = undefined
+                return retObject
 
         when PRIMITIVE
             switch (model)
                 when PLANE
                     geometry = new THREE.PlaneGeometry(width, height, divx, divy)
                 when CUBE
-                    geometry = new THREE.CubeGeometry(width, height, depth)
-                    nop()
+                    geometry = new THREE.BoxGeometry(width, height, depth)
                 when CIRCLE
                     nop()
                 when CYLINDER
@@ -237,17 +364,44 @@ addObject = (param)->
                 map = THREE.ImageUtils.loadTexture(MEDIALIST[texture])
                 material = new THREE.MeshLambertMaterial {
                     map: map
+                    color: color
+                }
+            else if (video?)
+                # video要素とそれをキャプチャするcanvas要素を生成
+                vcanvas = document.createElement('video')
+                vcanvas.src = MEDIALIST[video]
+                vcanvas.load()
+                vcanvas.autoplay = videoautoplay
+                vcanvas.loop = videoloop
+
+                # 生成したcanvasをtextureとしてTHREE.Textureオブジェクトを生成
+                vtexture = new THREE.Texture(vcanvas)
+                vtexture.minFilter = THREE.LinearFilter
+                vtexture.magFilter = THREE.LinearFilter
+
+                # 生成したvideo textureをmapに指定し、overdrawをtureにしてマテリアルを生成
+                material = new THREE.MeshLambertMaterial {
+                    map: vtexture
+                    overdraw: true
+                    side:THREE.DoubleSide
                 }
             else
-                material = new THREE.MeshPhongMaterial({color: color})
+                material = new THREE.MeshPhongMaterial {
+                    color: color
+                    ambient: 0x303030
+                    specular: 0xffffff
+                    shininess:1
+                    metal:true
+                }
+
             motionsprite = new THREE.Mesh(geometry, material)
             motionsprite.position.set(x, y, z)
             rootScene.add(motionsprite)
-            retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma)
 
-    return retObject
+            retObject = @setMotionObj(x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma, vcanvas, vtexture)
+            return retObject
 
-setMotionObj = (x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma)->
+setMotionObj = (x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, opacity, _type, motionsprite, motionObj, alpha, beta, gamma, vcanvas, vtexture)->
     # 動きを定義したオブジェクトを生成する
     initparam = []
     initparam['x'] = x
@@ -271,6 +425,8 @@ setMotionObj = (x, y, z, xs, ys, zs, visible, scaleX, scaleY, scaleZ, gravity, o
     initparam['intersectFlag'] = true
     initparam['opacity'] = opacity
     initparam['motionsprite'] = motionsprite
+    initparam['vcanvas'] = vcanvas
+    initparam['vtexture'] = vtexture
 
     objnum = _getNullObject()
     if (objnum < 0)
@@ -311,7 +467,7 @@ removeObject = (motionObj)->
     if (typeof(motionObj.destructor) == 'function')
         motionObj.destructor()
 
-    rootScene.removeChild(object.motionObj.sprite)
+    rootScene.remove(object.motionObj.sprite)
     object.motionObj.sprite = undefined
 
     object.motionObj = undefined

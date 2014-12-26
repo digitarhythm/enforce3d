@@ -10,7 +10,7 @@ echo "Project Dcirectory:"$PROJ
 mkdir -p $PROJ/lib
 mkdir -p $PROJ/media/picture
 mkdir -p $PROJ/media/sound
-mkdir -p $PROJ/media/collada
+mkdir -p $PROJ/media/model
 mkdir -p $PROJ/src
 mkdir -p $PROJ/sysobject
 mkdir -p $PROJ/usrobject

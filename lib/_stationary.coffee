@@ -30,6 +30,8 @@ class _stationary
             @alpha = initparam['alpha']
             @beta = initparam['beta']
             @gamma = initparam['gamma']
+            @vcanvas = initparam['vcanvas']
+            @vtexture = initparam['vtexture']
             @gravity = initparam['gravity']
             @intersectFlag = initparam['intersectFlag']
             @opacity = initparam['opacity']

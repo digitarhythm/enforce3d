@@ -13,6 +13,7 @@ OBJECTNUM       = 256                       # キャラの最大数
 GRAVITY         = 9.8                       # 重力（box2dで使用）
 FOGCOLOR        = "#ffffff"                 # フォグの色
 FOGLEVEL        = 0.0                       # フォルの量
+FPS             = 30                        # frame per second
 
 # preloading image list ***********************************************************************************
 MEDIALIST       = {
