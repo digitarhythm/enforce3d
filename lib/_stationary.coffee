@@ -75,9 +75,7 @@ class _stationary
                     @beta = @beta % 360
                 if (@gamma > 360)
                     @gamma = @gamma % 360
-                @sprite.rotation.x = @alpha / 180 * Math.PI
-                @sprite.rotation.y = @beta / 180 * Math.PI
-                @sprite.rotation.z = @gamma / 180 * Math.PI
+                @sprite.rotation.set(@alpha * RAD, @beta * RAD, @gamma * RAD)
                 @ys -= @gravity
                 @x += @xs
                 @y += @ys

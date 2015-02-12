@@ -1,10 +1,9 @@
-# motionObj, kind, x, y, xs, ys, g, image, chara_w, chara_h, opacity, animlist, anime, visible
 class sample extends _stationary
     #**************************
     # character constructor
     #**************************
-    constructor:(@sprite)->
-        super(@sprite)
+    constructor:(initparam)->
+        super(initparam)
 
     #**************************
     # character destructor
@@ -19,34 +18,31 @@ class sample extends _stationary
         super()
         switch @_processnumber
             when 0
-                @alpha++
-                @beta++
-                @gamma++
                 if (@y < -50)
+                    @ys *= -1
                     @y = -50
-                    @ys = 5.0
+                @beta += 4
 
     #**************************
     # touch event
     #**************************
     #touchesBegan:(pos)->
-    #   super(pos)
+    #    super(pos)
 
     #**************************
     # swipe event
     #**************************
     #touchesMoved:(pos)->
-    #   super(pos)
+    #    super(pos)
 
     #**************************
-    # detouch event
+    # detach event
     #**************************
     #touchesEnded:(pos)->
-    #   super(pos)
+    #    super(pos)
 
     #**************************
     # touch cancel event
     #**************************
     #touchesCanceled:(pos)->
-    #   super(pos)
-
+    #    super(pos)

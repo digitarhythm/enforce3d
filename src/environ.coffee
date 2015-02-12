@@ -17,5 +17,6 @@ FPS             = 30                        # frame per second
 
 # preloading image list ***********************************************************************************
 MEDIALIST       = {
-    miku: 'media/collada/negimiku.dae'
+    droid   : 'media/model/droid.dae'
+    miku    : 'media/model/negimiku.dae'
 }
