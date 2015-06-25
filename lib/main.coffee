@@ -160,7 +160,6 @@ window.addEventListener 'load', (e)->
     webglelm = document.getElementById('webgl')
     webglelm.appendChild(renderelm)
 
-    JSLog("viewangle=%@, viewnear=%@, viewfar=%@", VIEWANGLE, VIEWNEAR, VIEWFAR)
     _CAMERA = new THREE.PerspectiveCamera(VIEWANGLE, ASPECT, VIEWNEAR, VIEWFAR)
     _CAMERA.up.set(0, 1, 0)
     _CAMERA.position.set(0, 0, 0)
