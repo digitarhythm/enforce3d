@@ -2,7 +2,7 @@ class _stationary
     #***************************************************************
     # コンストラクター
     #***************************************************************
-    constructor:(initparam)->
+    constructor:(@initparam)->
         @_processnumber = 0
         @_waittime = 0.0
         @_dispframe = 0
@@ -10,50 +10,58 @@ class _stationary
         @_returnflag = false
         @_autoRemove = false
         @_animTime = LAPSEDTIME * 1000
-        @sprite = initparam['motionsprite']
+        @sprite = @initparam['motionsprite']
 
         if (@sprite?)
-            @x = initparam['x']
-            @y = initparam['y']
-            @z = initparam['z']
-            @oldx = initparam['x']
-            @oldy = initparam['y']
-            @oldz = initparam['z']
-            @xs = initparam['xs']
-            @ys = initparam['ys']
-            @zs = initparam['zs']
-            @oldys = initparam['ys']
-            @visible = initparam['visible']
-            @scaleX = initparam['scaleX']
-            @scaleY = initparam['scaleY']
-            @scaleZ = initparam['scaleZ']
-            @alpha = initparam['alpha']
-            @beta = initparam['beta']
-            @gamma = initparam['gamma']
-            @vcanvas = initparam['vcanvas']
-            @vtexture = initparam['vtexture']
-            @gravity = initparam['gravity']
-            @intersectFlag = initparam['intersectFlag']
-            @opacity = initparam['opacity']
+            @setupSprite()
 
-            @sprite.ontouchstart = (e)=>
-                pos = {x:e.x, y:e.y}
-                if (typeof @touchesBegan == 'function')
-                    @touchesBegan(pos)
-            @sprite.ontouchmove = (e)=>
-                pos = {x:e.x, y:e.y}
-                if (typeof @touchesMoved == 'function')
-                    @touchesMoved(pos)
-            @sprite.ontouchend = (e)=>
-                pos = {x:e.x, y:e.y}
-                if (typeof @touchesEnded == 'function')
-                    @touchesEnded(pos)
-            @sprite.ontouchcancel = (e)=>
-                pos = {x:e.x, y:e.y}
-                if (typeof @touchesCanceled == 'function')
-                    @touchesCanceled(pos)
-
-            @intersectFlag = true
+    #***************************************************************
+    # スプライト初期化
+    #***************************************************************
+    setupSprite:->
+        @x = @initparam['x']
+        @y = @initparam['y']
+        @z = @initparam['z']
+        @oldx = @initparam['x']
+        @oldy = @initparam['y']
+        @oldz = @initparam['z']
+        @xs = @initparam['xs']
+        @ys = @initparam['ys']
+        @zs = @initparam['zs']
+        @oldys = @initparam['ys']
+        @visible = @initparam['visible']
+        @scaleX = @initparam['scaleX']
+        @scaleY = @initparam['scaleY']
+        @scaleZ = @initparam['scaleZ']
+        @alpha = @initparam['alpha']
+        @beta = @initparam['beta']
+        @gamma = @initparam['gamma']
+        @vcanvas = @initparam['vcanvas']
+        @vtexture = @initparam['vtexture']
+        @gravity = @initparam['gravity']
+        @intersectFlag = @initparam['intersectFlag']
+        @opacity = @initparam['opacity']
+        @parent = @initparam['parent']
+        @intersectFlag = true
+        @sprite.ontouchstart = (e)=>
+            pos = {x:e.x, y:e.y}
+            if (typeof @touchesBegan == 'function')
+                @touchesBegan(pos)
+        @sprite.ontouchmove = (e)=>
+            pos = {x:e.x, y:e.y}
+            if (typeof @touchesMoved == 'function')
+                @touchesMoved(pos)
+        @sprite.ontouchend = (e)=>
+            pos = {x:e.x, y:e.y}
+            if (typeof @touchesEnded == 'function')
+                @touchesEnded(pos)
+        @sprite.ontouchcancel = (e)=>
+            pos = {x:e.x, y:e.y}
+            if (typeof @touchesCanceled == 'function')
+                @touchesCanceled(pos)
+        @sprite.castShadow = true
+        @sprite.receiveShadow = true
+        @initparam = []
 
     #***************************************************************
     # デストラクター
@@ -69,12 +77,18 @@ class _stationary
                 @sprite.position.set(Math.floor(@x), Math.floor(@y), Math.floor(@z))
                 @sprite.visible = @visible
                 @sprite.scale.set(@scaleX, @scaleY, @scaleZ)
+                if (@alpha < 0)
+                    @alpha = 360 + @alpha
                 if (@alpha > 360)
-                    @alpha = @alpha % 360
+                    @alpha %= 360
+                if (@beta < 0)
+                    @beta = 360 + @beta
                 if (@beta > 360)
-                    @beta = @beta % 360
+                    @beta %= 360
+                if (@gamma < 0)
+                    @gamma = 360 + @gamma
                 if (@gamma > 360)
-                    @gamma = @gamma % 360
+                    @gamma %= 360
                 @sprite.rotation.set(@alpha * RAD, @beta * RAD, @gamma * RAD)
                 @ys -= @gravity
                 @x += @xs
@@ -83,6 +97,7 @@ class _stationary
                 @sprite.x = Math.floor(@x)
                 @sprite.y = Math.floor(@y)
                 @sprite.z = Math.floor(@z)
+                @sprite.opacity = @opacity
 
         if (@_waittime > 0 && LAPSEDTIME > @_waittime)
             @_waittime = 0

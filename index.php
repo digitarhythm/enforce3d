@@ -1,32 +1,54 @@
 <?php
 $ini = parse_ini_file("lib/config.ini", true);
-$vrmode = $ini['ENVIRON']['VRMODE'];
+$gametitle = $ini['ENVIRON']['TITLE'];
+$vr3dview = $ini['ENVIRON']['VR3DVIEW'];
+$vrmotion = $ini['ENVIRON']['VRMOTION'];
 ?>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    <title><?php echo $gametitle;?></title>
     <meta http-equiv="x-ua-compatible" content="IE=Edge">
-    <!--meta name="viewport" content="width=device-width, user-scalable=no, minimal-ui"-->
-    <meta name="viewport" content="width=device-width, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta property='og:image' content='lib/enforce_icon.png'>
+<?php
+    if ($gametitle != "") {
+        echo "<meta property='og:title' content='$gametitle'>\n";
+    } else {
+        echo "<meta property='og:title' content='enforce games'>\n";
+    }
+?>
 	<script type="text/javascript" src="usrobject/environ.js"></script>
-    <script type="text/javascript" src="extlib/jquery-2.1.0.min.js"></script>
     <script type="text/javascript" src="extlib/three.min.js"></script>
     <script type="text/javascript" src="extlib/ColladaLoader.js"></script>
-    <script type="text/javascript" src="extlib/DeviceOrientationControls.js"></script>
     <script type="text/javascript" src="extlib/TrackballControls.js"></script>
-    <script type="text/javascript" src="extlib/OrbitControls.js"></script>
+    <script type="text/javascript" src="extlib/OBJLoader.js"></script>
+    <script type="text/javascript" src="extlib/Detector.js"></script>
 <?php
-    if ($vrmode == true) {
+    if ($vrmotion == true || $vr3dview == true) {
 ?>
-    <script type="text/javascript" src="extlib/OculusRiftEffect.js"></script>
-    <script type="text/javascript" src="extlib/vr.js"></script>
-    <script type="text/javascript">VRMODE = true;</script>
+        <script type="text/javascript" src="extlib/vr.js"></script>
+        <script type="text/javascript" src="extlib/DeviceOrientationControls.js"></script>
+        <script type="text/javascript" src="extlib/OrbitControls.js"></script>
+<?php
+    }
+    if ($vrmotion == true) {
+?>
+        <script type="text/javascript">VRMOTION = true;</script>
 <?php
     } else {
 ?>
-    <script type="text/javascript">VRMODE = false;</script>
+        <script type="text/javascript">VRMOTION = false;</script>
+<?php
+    }
+    if ($vr3dview == true) {
+?>
+        <script type="text/javascript" src="extlib/OculusRiftEffect.js"></script>
+        <script type="text/javascript">VR3DVIEW = true;</script>
+<?php
+    } else {
+?>
+        <script type="text/javascript">VR3DVIEW = false;</script>
 <?php
     }
 ?>
@@ -65,6 +87,6 @@ $vrmode = $ini['ENVIRON']['VRMODE'];
 </head>
 <body style="overflow: hidden; background-color:black;">
     <div id="webgl" style="position:absolute; width: 100%; height:100%; left:0px; top:0px;"></div>
-    <div id="status" style="position:absolute; width:100%; height:24px; font-size:12pt; left:0px; top:0px; background-color:white; opacity: 0.4;">
+    <!--div id="status" style="position:absolute; width:100%; height:24px; font-size:12pt; left:0px; top:0px; background-color:white; opacity: 0.4; color:black;"-->
 </body>
 </html>

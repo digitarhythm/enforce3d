@@ -15,6 +15,7 @@
 # オブジェクトの種類
 CONTROL             = 0
 COLLADA             = 10
+JSON3D              = 11
 PRIMITIVE           = 20
 
 # プリミティブ
@@ -40,6 +41,7 @@ TORUSKNOT           = 18
 TUBE                = 19
 
 # グローバル初期化
+GLOBAL              = []
 
 # ゲームパッド情報格納変数
 HORIZONTAL          = 0
@@ -120,18 +122,29 @@ else
 # スクリーンサイズ
 PIXELRATIO          = window.devicePixelRatio
 SCREEN_WIDTH        = window.innerWidth
-SCREEN_HEIGHT       = window.innerHeight + if (_browserMajorClass == "chrome") then 48 else 0
+SCREEN_HEIGHT       = window.innerHeight + if (_browserMajorClass == "chrome") then 48 else -8
 ASPECT              = SCREEN_WIDTH / SCREEN_HEIGHT
+
+# レンダリングサイド
+FRONTSIDE           = 0
+BACKSIDE            = 1
+DOUBLESIDE          = 2
+
+# デバッグ用
+#STATUSAREA          = undefined
+
+# アニメーション制御
+requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame
 
 #******************************************************************************
 # 起動時の処理
 #******************************************************************************
 
 # ゲーム起動時の処理
-window.onload = ->
+window.addEventListener 'load', (e)->
+    window.removeEventListener('load', arguments.callee, false)
     # Status Area
-    STATUSAREA = document.getElementById('status')
-
+    #STATUSAREA = document.getElementById('status')
     #STATUSAREA.innerHTML = "pixelratio="+PIXELRATIO
 
     if (MEDIALIST?)
@@ -147,20 +160,22 @@ window.onload = ->
     webglelm = document.getElementById('webgl')
     webglelm.appendChild(renderelm)
 
-    _CAMERA = new THREE.PerspectiveCamera(90, ASPECT, 1, 3000)
+    JSLog("viewangle=%@, viewnear=%@, viewfar=%@", VIEWANGLE, VIEWNEAR, VIEWFAR)
+    _CAMERA = new THREE.PerspectiveCamera(VIEWANGLE, ASPECT, VIEWNEAR, VIEWFAR)
     _CAMERA.up.set(0, 1, 0)
     _CAMERA.position.set(0, 0, 0)
 
     rootScene = new THREE.Scene()
-    rootScene.fog = new THREE.FogExp2( FOGCOLOR, FOGLEVEL );
+    rootScene.fog = new THREE.FogExp2(FOGCOLOR, FOGLEVEL);
 
     # カメラ設定
-    if (VRMODE == true)
+    if (VRMOTION == true)
         vr.load (error)->
             #if (error)
             #    STATUSAREA.innerHTML = 'Plugin error'
         VRSTATE = new vr.State()
 
+    if (VR3DVIEW == true)
         # OculusRiftEffect設定
         OculusRift = {
             hResolution: SCREEN_WIDTH
@@ -178,53 +193,83 @@ window.onload = ->
             worldFactor: WORLD_FACTOR
         })
     else
-        _CAMERA.lookAt(new THREE.Vector3(0, 0, -100))
+        _CAMERA.lookAt(new THREE.Vector3(0, 0, 0))
         #_CAMERA.lookAt(_CAMERA.position)
 
+
     rootScene.add(_CAMERA)
-    #createTrackball()
+    createTrackball()
 
     # デフォルトライト生成
-    _LIGHT1 = new THREE.DirectionalLight(0xffffff, 0.25)
-    _LIGHT1.position = new THREE.Vector3(3000.0, 0.0, 0.0)
+    _LIGHT1 = new THREE.DirectionalLight(0xffffff, 0.8)
+    _LIGHT1.position = new THREE.Vector3(0.0, 1000.0, 0.0)
     _LIGHT1.castShadow = true
     rootScene.add(_LIGHT1)
-    _LIGHT2 = new THREE.DirectionalLight(0xffffff, 0.25)
-    _LIGHT2.position = new THREE.Vector3(0.0, 0.0, 3000.0)
-    _LIGHT2.castShadow = true
-    rootScene.add(_LIGHT2)
-    _LIGHT3 = new THREE.DirectionalLight(0xffffff, 0.25)
-    _LIGHT3.position = new THREE.Vector3(0.0, 0.0, -3000.0)
-    _LIGHT3.castShadow = true
-    rootScene.add(_LIGHT3)
-    _LIGHT4 = new THREE.DirectionalLight(0xffffff, 0.25)
-    _LIGHT4.position = new THREE.Vector3(-3000.0, 0.0, 0.0)
-    _LIGHT4.castShadow = true
-    rootScene.add(_LIGHT4)
+    #_LIGHT2 = new THREE.DirectionalLight(0xffffff, 0.8)
+    #_LIGHT2.position = new THREE.Vector3(1000.0, 1000.0, 1000.0)
+    #_LIGHT2.castShadow = true
+    #rootScene.add(_LIGHT2)
+    #_LIGHT3 = new THREE.DirectionalLight(0xffffff, 0.1)
+    #_LIGHT3.position = new THREE.Vector3(0.0, 1000.0, -3000.0)
+    #_LIGHT3.castShadow = true
+    #rootScene.add(_LIGHT3)
+    #_LIGHT4 = new THREE.DirectionalLight(0xffffff, 0.1)
+    #_LIGHT4.position = new THREE.Vector3(-3000.0, 1000.0, 0.0)
+    #_LIGHT4.castShadow = true
+    #rootScene.add(_LIGHT4)
+
     # 環境光オブジェクト(LIGHT2)の設定
     _LIGHTA = new THREE.AmbientLight(0xffffff)
-    _LIGHTA.castShadow = true
+    #_LIGHTA.castShadow = true
     # sceneに環境光オブジェクト(LIGHT2)を追加
     rootScene.add(_LIGHTA)
 
     # スマートフォンのモーションセンサー
-    _SENSOR = new THREE.DeviceOrientationControls(_CAMERA)
+    if (VRMOTION == true)
+        _SENSOR = new THREE.DeviceOrientationControls(_CAMERA)
 
+    cameraControl(false)
     for i in [0...OBJECTNUM]
         _objects[i] = new _originObject()
     _main = new enforceMain()
+    cameraControl(true)
+
+    #createTrackball()
+
+    if (DEBUG)
+        geometry = new THREE.PlaneGeometry(500, 500, 50, 50)
+        material = new THREE.MeshPhongMaterial {
+            color: 0xffffff
+            side: THREE.DoubleSide
+            transparent: true
+            opacity: 0.3
+            blending: THREE.NormalBlending
+            wireframe: true
+            #specular: specular
+            #shininess: shininess
+            #ambient: ambient
+            #emissive: emissive
+            #metal: metal
+        }
+        grid = new THREE.Mesh(geometry, material)
+        grid.rotation.x = 90 * RAD
+        grid.position.set(0, 0, 0)
+        rootScene.add(grid)
+    
 
     enterframe()
 
 #******************************************************************************
 # 各種イベント登録
 #******************************************************************************
+
     # keyDownイベント
     document.addEventListener 'keydown', (e)->
         if (!e?)
             e = window.event
         keycode = e.keyCode
         _keyinput[keycode] = true
+    ###
         # フルスクリーン処理
         if (_keyinput[32])
             e.preventDefault()
@@ -235,6 +280,7 @@ window.onload = ->
                 vr.exitFullScreen()
             else
                 vr.enterFullScreen(true)
+    ###
 
     # keyUpイベント
     document.addEventListener 'keyup', (e)->
@@ -245,7 +291,7 @@ window.onload = ->
 
     # resizeイベント
     window.addEventListener 'resize', ->
-        STATUSAREA.innerHTML = "width="+SCREEN_WIDTH+", height="+SCREEN_HEIGHT+", raitio="+PIXELRATIO
+        #STATUSAREA.innerHTML = "width="+SCREEN_WIDTH+", height="+SCREEN_HEIGHT+", raitio="+PIXELRATIO
         SCREEN_WIDTH = window.innerWidth
         SCREEN_HEIGHT = window.innerHeight + if (_browserMajorClass == "chrome") then 48 else 0
         OculusRift = {
@@ -269,19 +315,19 @@ window.onload = ->
         })
     , false
 
-    STATUSAREA.innerHTML = "width="+SCREEN_WIDTH+", height="+SCREEN_HEIGHT+", raitio="+PIXELRATIO
-
 #******************************************************************************
 # フレーム毎に実行する処理
 #******************************************************************************
 
 enterframe = ->
+    #STATUSAREA.innerHTML = "width="+SCREEN_WIDTH+", height="+SCREEN_HEIGHT+", raitio="+PIXELRATIO
+
     for obj in _objects
-        if (obj.active == true && obj.motionObj != undefined && typeof(obj.motionObj.behavior) == 'function')
+        if (obj.active == true && obj.motionObj? && typeof(obj.motionObj.behavior) == 'function')
             obj.motionObj.behavior()
-            if (obj.motionObj.vcanvas?)
-                if (obj.motionObj.vcanvas.readyState == obj.motionObj.vcanvas.HAVE_ENOUGH_DATA)
-                    if (obj.motionObj.vtexture)
+            if (obj.motionObj? && obj.motionObj.vcanvas?)
+                if (obj.motionObj? && obj.motionObj.vcanvas.readyState == obj.motionObj.vcanvas.HAVE_ENOUGH_DATA)
+                    if (obj.motionObj? && obj.motionObj.vtexture)
                         obj.motionObj.vtexture.needsUpdate = true
 
             # ジョイパッド処理
@@ -290,32 +336,37 @@ enterframe = ->
                 for num in [0..._GAMEPADSINFO.length]
                     if (!_GAMEPADSINFO[num]?)
                         continue
-                    padobj = _GAMEPADSINFO[num]
                     PADBUTTONS[num] = _GAMEPADSINFO[num].padbuttons
                     PADAXES[num] = _GAMEPADSINFO[num].padaxes
                     ANALOGSTICK[num] = _GAMEPADSINFO[num].analogstick
+                    PADINFO[num] = []
+                    PADINFO[num].id = _GAMEPADSINFO[num].id
+
             if (_keyinput[90] || _keyinput[32])
                 PADBUTTONS[0][0] = true
             else if (!_GAMEPADSINFO[0]?)
                 PADBUTTONS[0][0] = false
+
             if (_keyinput[88])
                 PADBUTTONS[0][1] = true
             else if (!_GAMEPADSINFO[0]?)
                 PADBUTTONS[0][1] = false
+
             if (_keyinput[37])
                 PADAXES[0][HORIZONTAL] = -1
-            else if (_keyinput[38])
+            else if (_keyinput[39]) # right
                 PADAXES[0][HORIZONTAL] = 1
             else if (!_GAMEPADSINFO[0]?)
                 PADAXES[0][HORIZONTAL] = 0
-            if (_keyinput[39])
+
+            if (_keyinput[38]) # up
                 PADAXES[0][VERTICAL] = -1
             else if (_keyinput[40])
                 PADAXES[0][VERTICAL] = 1
             else if (!_GAMEPADSINFO[0]?)
                 PADAXES[0][VERTICAL] = 0
 
-    if (VRMODE == true)
+    if (VRMOTION == true)
         if (!vr.pollState(VRSTATE))
             return
 
@@ -324,10 +375,11 @@ enterframe = ->
             _CAMERA.quaternion.y = VRSTATE.hmd.rotation[1];
             _CAMERA.quaternion.z = VRSTATE.hmd.rotation[2];
             _CAMERA.quaternion.w = VRSTATE.hmd.rotation[3];
-            #STATUSAREA.innerHTML = ''
         else
             _SENSOR.update()
-            #status.innerHTML = 'OculusRift not found.'
+            status.innerHTML = 'OculusRift not found.'
+
+    if (VR3DVIEW == true)
         _EFFECT.render(rootScene, _CAMERA)
     else
         _RENDERER.render(rootScene, _CAMERA)
@@ -335,13 +387,14 @@ enterframe = ->
     if (_TRACKBALLOBJ?)
         _TRACKBALLOBJ.update()
 
-    setTimeout(enterframe, 1000 / FPS)
+    #setTimeout(enterframe, 1000 / FPS)
+    requestAnimationFrame(enterframe)
 
 
 #******************************************************************************
 # 共用オブジェクト生成メソッド
 #******************************************************************************
-addObject = (param)->
+addObject = (param, parent = undefined)->
     # パラメーター
     motionObj = if (param.motionObj?) then param.motionObj else undefined
     _type = if (param.type?) then param.type else GLSPHERE
@@ -379,6 +432,14 @@ addObject = (param)->
     length2 = if (param.length2?) then param.length2 else 360.0
     textparam = if (param.textparam?) then param.textparam else []
     text = if (param.text?) then param.text else "TEXT"
+    specular = if (param.specular?) then param.specular else 0
+    shininess = if (param.shininess?) then param.shininess else 0
+    ambient = if (param.ambient?) then param.ambient else 0x101010
+    emissive = if (param.emissive?) then param.emissive else 0x000000
+    metal = if (param.metal?) then param.metal else false
+    side = if (param.side?) then param.side else FRONTSIDE
+    transparent = if (param.transparent?) then param.transparent else false
+    opacity = if (param.opacity?) then param.opacity else 1.0
 
     if (motionObj == undefined)
         motionObj = undefined
@@ -387,11 +448,54 @@ addObject = (param)->
     switch (_type)
         when COLLADA
             if (MEDIALIST[model]?)
+                retObject = @setMotionObj
+                    x: x
+                    y: y
+                    z: z
+                    xs: xs
+                    ys: ys
+                    zs: zs
+                    visible: visible
+                    scaleX: scaleX
+                    scaleY: scaleY
+                    scaleZ: scaleZ
+                    gravity: gravity
+                    opacity: opacity
+                    _type: _type
+                    motionsprite: undefined
+                    motionObj: motionObj
+                    alpha: alpha
+                    beta: beta
+                    gamma: gamma
+                    vcanvas: vcanvas
+                    vtexture: vtexture
+                    parent: parent
+
                 loader = new THREE.ColladaLoader()
                 loader.options.convertUpAxis = true
-                loader.load(MEDIALIST[model])
                 loader.load MEDIALIST[model], (collada)=>
                     motionsprite = collada.scene
+                    motionsprite.position.set(x, y, z)
+                    motionsprite.scale.set(scaleX, scaleY, scaleZ)
+                    motionsprite.scale.x = scaleX
+                    motionsprite.scale.y = scaleY
+                    motionsprite.scale.z = scaleZ
+                    motionsprite.rotation.set(alpha * RAD, beta * RAD, gamma * RAD)
+                    motionsprite.updateMatrix()
+                    retObject.sprite = motionsprite
+                    rootScene.add(motionsprite)
+                    retObject.setupSprite()
+                return retObject
+            else
+                retobject = undefined
+                motionsprite = undefined
+                return retObject
+
+        when JSON3D
+            if (MEDIALIST[model]?)
+                new THREE.JSONLoader().load MEDIALIST[model], (geometry, materials)=>
+                    material = new THREE.MeshFaceMaterial(materials)
+                    motionsprite = new THREE.Mesh(geometry, material)
                     motionsprite.position.set(x, y, z)
                     motionsprite.scale.set(scaleX, scaleY, scaleZ)
                     motionsprite.scale.x = scaleX
@@ -421,11 +525,13 @@ addObject = (param)->
                         gamma: gamma
                         vcanvas: vcanvas
                         vtexture: vtexture
+                        parent: parent
                     return retObject
             else
                 retobject = undefined
                 motionsprite = undefined
                 return retObject
+
 
         when PRIMITIVE
             switch (model)
@@ -453,9 +559,29 @@ addObject = (param)->
 
             if (texture?)
                 map = THREE.ImageUtils.loadTexture(MEDIALIST[texture])
-                material = new THREE.MeshLambertMaterial {
+                #material = new THREE.MeshLambertMaterial {
+                switch (side)
+                    when FRONTSIDE
+                        sideval = THREE.FrontSide
+                    when BACKSIDE
+                        sideval = THREE.BackSide
+                    when DOUBLESIDE
+                        sideval = THREE.DoubleSide
+                    else
+                        sideval = THREE.FRONTSIDE
+                material = new THREE.MeshBasicMaterial {
                     map: map
+                    overdraw: true
                     color: color
+                    side: sideval
+                    transparent: transparent
+                    opacity: opacity
+                    blending: THREE.NormalBlending
+                    specular: specular
+                    shininess: shininess
+                    ambient: ambient
+                    emissive: emissive
+                    metal: metal
                 }
             else if (video?)
                 # video要素とそれをキャプチャするcanvas要素を生成
@@ -474,15 +600,28 @@ addObject = (param)->
                 material = new THREE.MeshLambertMaterial {
                     map: vtexture
                     overdraw: true
-                    side:THREE.DoubleSide
+                    side: sideval
+                    transparent: transparent
+                    opacity: opacity
+                    blending: THREE.NormalBlending
+                    specular: specular
+                    shininess: shininess
+                    ambient: ambient
+                    emissive: emissive
+                    metal: metal
                 }
             else
                 material = new THREE.MeshPhongMaterial {
                     color: color
-                    ambient: 0x303030
-                    specular: 0xffffff
-                    shininess:1
-                    metal:true
+                    side: sideval
+                    transparent: transparent
+                    opacity: opacity
+                    blending: THREE.NormalBlending
+                    specular: specular
+                    shininess: shininess
+                    ambient: ambient
+                    emissive: emissive
+                    metal: metal
                 }
 
             motionsprite = new THREE.Mesh(geometry, material)
@@ -511,7 +650,34 @@ addObject = (param)->
                 gamma: gamma
                 vcanvas: vcanvas
                 vtexture: vtexture
+                parent: parent
             return retObject
+
+        when CONTROL
+            retObject = @setMotionObj
+                x: x
+                y: y
+                z: z
+                xs: xs
+                ys: ys
+                zs: zs
+                visible: visible
+                scaleX: scaleX
+                scaleY: scaleY
+                scaleZ: scaleZ
+                gravity: gravity
+                opacity: opacity
+                _type: _type
+                motionsprite: undefined
+                motionObj: motionObj
+                alpha: alpha
+                beta: beta
+                gamma: gamma
+                vcanvas: vcanvas
+                vtexture: vtexture
+                parent: parent
+            return retObject
+
 
 setMotionObj = (param)->
     if (param.x?) then x = param.x else x = 0.0
@@ -534,6 +700,7 @@ setMotionObj = (param)->
     if (param.gamma?) then gamma = param.gamma else gamma = 0.0
     if (param.vcanvas?) then vcanvas = param.vcanvas else vcanvas = undefined
     if (param.vtexture?) then vtexture = param.vtexture else vtexture = undefined
+    if (param.parent?) then parent = param.parent else parent = undefined
 
     # 動きを定義したオブジェクトを生成する
     initparam = []
@@ -560,6 +727,7 @@ setMotionObj = (param)->
     initparam['motionsprite'] = motionsprite
     initparam['vcanvas'] = vcanvas
     initparam['vtexture'] = vtexture
+    initparam['parent'] = parent
 
     objnum = _getNullObject()
     if (objnum < 0)
@@ -625,6 +793,7 @@ getObject = (id)->
 # トラックボール作成
 #**********************************************************************
 createTrackball = (param)->
+    ###
     if (param?)
         if (param.noRotate?) then norotate = param.noRotate else norotate = false
         if (param.rotateSpeed?) then rotatespeed = param.rotateSpeed else rotatespeed = 1.0
@@ -635,28 +804,39 @@ createTrackball = (param)->
         if (param.staticMoving?) then staticmoving = param.staticMoving else staticmoving = true
         if (param.dynamicDampingFactor?) then dynamicdampingfactor = param.dynamicDampingFactor else dynamicdampingfactor = 0.3
     else
-        norotate = false
-        rotatespeed = 1.0
-        nozoom = false
-        zoomspeed = 1.0
-        nopan = false
-        panspeed= 1.0
+        norotate = true
+        rotatespeed = 0.0
+        nozoom = true
+        zoomspeed = 0.0
+        nopan = true
+        panspeed= 0.0
         staticmoving = true
-        dynamicdampingfactor = 0.3
+        dynamicdampingfactor = 0.0
+    ###
 
     _TRACKBALLOBJ = new THREE.TrackballControls(_CAMERA)
+    _TRACKBALLOBJ.noRotate = true
+    _TRACKBALLOBJ.rotateSpeed = 0.0
+    _TRACKBALLOBJ.noZoom = true
+    _TRACKBALLOBJ.zoomSpeed = 0.0
+    _TRACKBALLOBJ.noPan = true
+    _TRACKBALLOBJ.panSpeed = 0.0
+    _TRACKBALLOBJ.staticMoving = true
+    _TRACKBALLOBJ.dynamicDampingFactor = 0.0
 
-    ###
-    _TRACKBALLOBJ.noRotate = norotate
-    _TRACKBALLOBJ.rotateSpeed = rotatespeed
-    _TRACKBALLOBJ.noZoom = nozoom
-    _TRACKBALLOBJ.zoomSpeed = zoomspeed
-    _TRACKBALLOBJ.noPan = nopan
-    _TRACKBALLOBJ.panSpeed = panspeed
-    _TRACKBALLOBJ.staticMoving = staticmoving
-    _TRACKBALLOBJ.dynamicDampingFactor = dynamicdampingfactor
-    ###
 
+#**********************************************************************
+# カメラ操作
+#**********************************************************************
+cameraToggle = (flag)->
+    switch (flag)
+        when true
+            _CAMERA.far = VIEWFAR
+            _CAMERA.near = VIEWNEAR
+        when false
+            _CAMERA.far = 0
+            _CAMERA.near = 0
+    _CAMERA.updateProjectionMatrix()
 
 #**********************************************************************
 #**********************************************************************

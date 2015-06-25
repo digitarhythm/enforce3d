@@ -14,6 +14,9 @@ GRAVITY         = 9.8                       # 重力（box2dで使用）
 FOGCOLOR        = "#ffffff"                 # フォグの色
 FOGLEVEL        = 0.0                       # フォルの量
 FPS             = 30                        # frame per second
+VIEWANGLE       = 50                        # 視野角
+VIEWNEAR        = 1                         # 最短描画距離
+VIEWFAR         = 1000                      # 最長描画距離
 
 # preloading image list ***********************************************************************************
 MEDIALIST       = {

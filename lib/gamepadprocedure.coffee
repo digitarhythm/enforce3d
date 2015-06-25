@@ -15,6 +15,7 @@ _GAMEPADPROCEDURE_['firefox_gamepad'] =(gamepadsinfo)->
         # ゲームパッドボタン情報取得
         # 各種ゲームパッドで共通の情報が取れるがボタンが6つなので、それ以降のボタン情報は破棄する
         max = (if (buttons.length < 6) then buttons.length else 6)
+        #max = buttons.length
 
         # ボタン情報を取得する
         padbuttons = []
