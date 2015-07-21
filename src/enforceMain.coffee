@@ -8,7 +8,7 @@ class enforceMain
             x: 30
             y: 50
             z: -100
-            gravity: 1
+            gravity: 0.3
             alpha: 0.0
             beta: 0.0
             gamma: 0.0
@@ -24,7 +24,7 @@ class enforceMain
             y: 50
             z: -100
             beta: 90
-            gravity: 1
+            gravity: 0.3
             scaleX: 30.0
             scaleY: 30.0
             scaleZ: 30.0

@@ -18,10 +18,10 @@ class sample extends _stationary
         super()
         switch @_processnumber
             when 0
-                if (@y < -50)
-                    @ys *= -1
-                    @y = -50
-                @beta += 4
+                if (@y < 0)
+                    @ys = 5
+                    @y = 0
+                @beta += 1
 
     #**************************
     # touch event
